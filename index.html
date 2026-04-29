@@ -466,33 +466,37 @@
         workList.innerHTML = uniqueWork.map(w => `<option value="${w}">`).join("");
     }
 
-    // 一覧テーブル描画
-    function renderListTable() {
-        const tbody = document.getElementById("listTableBody");
-        if(!tbody) return;
-        tbody.innerHTML = "";
-        documents.forEach(doc => {
-            const row = tbody.insertRow();
-            // チェックボックス列
-            const chkCell = row.insertCell(0);
-            chkCell.innerHTML = `<input type="checkbox" class="row-check" data-id="${doc.id}">`;
-            
-            row.insertCell(1).innerText = doc.id;
-            row.insertCell(2).innerText = formatDateJP(doc.date);
-            row.insertCell(3).innerHTML = `<span class="badge-quote">${doc.type}</span>`;
-            row.insertCell(4).innerText = doc.vehicle || "—";
-            row.insertCell(5).innerText = doc.work || "—";
-            row.insertCell(6).innerText = doc.qty || "";
-            row.insertCell(7).innerText = formatMoney(doc.price);
-            row.insertCell(8).innerText = formatMoney(doc.amount);
-            row.insertCell(9).innerText = doc.requester || "—";
-            
-            const actionCell = row.insertCell(10);
-            actionCell.className = "action-group";
-            actionCell.innerHTML = `<button class="btn-icon btn-edit" onclick="editRecordById(${doc.id})">編集</button>
-                                    <button class="btn-icon btn-delete" onclick="deleteRecordById(${doc.id})">削除</button>`;
-        });
-    }
+// 一覧テーブル描画 (日付順ソート)
+function renderListTable() {
+    const tbody = document.getElementById("listTableBody");
+    if(!tbody) return;
+    tbody.innerHTML = "";
+
+    // ★ 変更：古い日付が上に来るように並べ替え
+    const sortedDocs = [...documents].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    sortedDocs.forEach(doc => {
+        const row = tbody.insertRow();
+        // チェックボックス列
+        const chkCell = row.insertCell(0);
+        chkCell.innerHTML = `<input type="checkbox" class="row-check" data-id="${doc.id}">`;
+        
+        row.insertCell(1).innerText = doc.id;
+        row.insertCell(2).innerText = formatDateJP(doc.date);
+        row.insertCell(3).innerHTML = `<span class="badge-quote">${doc.type}</span>`;
+        row.insertCell(4).innerText = doc.vehicle || "—";
+        row.insertCell(5).innerText = doc.work || "—";
+        row.insertCell(6).innerText = doc.qty || "";
+        row.insertCell(7).innerText = formatMoney(doc.price);
+        row.insertCell(8).innerText = formatMoney(doc.amount);
+        row.insertCell(9).innerText = doc.requester || "—";
+        
+        const actionCell = row.insertCell(10);
+        actionCell.className = "action-group";
+        actionCell.innerHTML = `<button class="btn-icon btn-edit" onclick="editRecordById(${doc.id})">編集</button>
+                                <button class="btn-icon btn-delete" onclick="deleteRecordById(${doc.id})">削除</button>`;
+    });
+}
 
     // 全選択・解除
     function toggleAll(chk) {
