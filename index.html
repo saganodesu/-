@@ -425,6 +425,19 @@
     // ---------- データ保存用 (最初は空) ----------
     let documents = [];
 
+    // ★ 追加：ブラウザからデータを読み込む
+    function loadData() {
+        const saved = localStorage.getItem("mekawork_docs");
+        if(saved) {
+            documents = JSON.parse(saved);
+        }
+    }
+
+    // ★ 追加：ブラウザにデータを保存する
+    function saveData() {
+        localStorage.setItem("mekawork_docs", JSON.stringify(documents));
+    }
+
     // ヘルパー関数
     function formatDateJP(dateStr) {
         if(!dateStr) return "";
@@ -444,6 +457,7 @@
         updateSelectOptions();
         updateStatsAndDashboard();
         updateSuggestions();
+        saveData(); // ★ 変更：更新時に自動保存
     }
 
     function updateSuggestions() {
@@ -558,67 +572,71 @@
         const tax = (doc.amount && !isNaN(doc.amount)) ? Math.floor(doc.amount * 0.1) : null;
         const totalIncTax = (doc.amount && tax !== null) ? doc.amount + tax : null;
         
-　　　　const previewHtml = `
-    <div style="font-family:'Helvetica Neue','Hiragino Kaku Gothic Pro',sans-serif; background:white; padding:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
-            <div style="flex:1;">
-                <div style="text-align:center; margin-bottom:10px;">
-                    <input type="text" class="doc-input-field" value="${doc.type}" style="font-size:2.2rem; font-weight:bold; width:100%; text-align:center;">
+        const previewHtml = `
+            <div style="font-family:'Helvetica Neue','Hiragino Kaku Gothic Pro',sans-serif; background:white; padding:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+                    <div style="flex:1;">
+                        <div style="text-align:center; margin-bottom:10px;">
+                            <input type="text" class="doc-input-field" value="${doc.type}" style="font-size:2.2rem; font-weight:bold; width:100%; text-align:center;">
+                        </div>
+                        
+                        <div style="font-size:1.2rem; font-weight:bold; margin-bottom:8px;">
+                            <input type="text" class="doc-input-field" placeholder="〇〇株式会社 御中" style="font-size:1.2rem; font-weight:bold; width:90%;">
+                        </div>
+                        
+                        <div style="margin-top:8px;">
+                            件名：<input type="text" class="doc-input-field" value="${doc.work || "作業工賃"}" style="width:70%;">
+                        </div>
+                        
+                        <div style="margin-top:15px;">
+                            <input type="text" class="doc-input-field" value="下記の通り、${doc.type}申し上げます。" style="width:100%;">
+                        </div>
+                    </div>
+                    <div style="text-align:right; min-width:280px;">
+                        <div style="font-size:1rem;">${formatDateJP(doc.date)}</div>
+                        <div style="margin-top:10px;">
+                            株式会社メカワーク<br>
+                            〒551-0003 大阪府大阪市大正区千島2-4UR 千島団地2-611<br>
+                            TEL：070-3537-4004<br>
+                            Email: motoyuki5611@gmail.com<br>
+                            登録番号：T8120001266455
+                        </div>
+                    </div>
                 </div>
-                <div style="font-size:1.2rem; font-weight:bold; margin-bottom:8px;">
-                    <input type="text" class="doc-input-field" placeholder="〇〇株式会社 御中" style="font-size:1.2rem; font-weight:bold; width:90%;">
+
+                <hr style="border: none; border-top: 2px solid #333; margin:20px 0;">
+
+                <table style="width:100%; border-collapse:collapse; margin:18px 0;">
+                    <thead>
+                        <tr style="background:#eef2fa;">
+                            <th style="border:1px solid #ccc; padding:10px; width:12%;">日付</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:15%;">車両番号</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:25%;">作業内容</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:10%;">数量</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:13%;">単価</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:15%;">金額(税抜)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:center;">${formatDateJP(doc.date)}</td>
+                            <td style="border:1px solid #ccc; padding:10px;">${doc.vehicle || ""}</td>
+                            <td style="border:1px solid #ccc; padding:10px;">${doc.work || ""}</td>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:center;">${doc.qty || ""}</td>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:right;">${formatMoney(doc.price)}</td>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:right;">${formatMoney(doc.amount)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="total-area" style="text-align:right; margin-top:24px; padding-right:10px;">
+                    小計: ${formatMoney(doc.amount)}<br>
+                    消費税(10%): ${formatMoney(tax)}<br>
+                    <strong style="font-size:1.2rem;">合計(税込): ${formatMoney(totalIncTax)}</strong>
                 </div>
-                <div style="margin-top:8px;">
-                    件名：<input type="text" class="doc-input-field" value="${doc.work || "作業工賃"}" style="width:70%;">
-                </div>
-                <div style="margin-top:15px;">
-                    <input type="text" class="doc-input-field" value="下記の通り、${doc.type}申し上げます。" style="width:100%;">
-                </div>
+
             </div>
-            <div style="text-align:right; min-width:280px;">
-                <div style="font-size:1rem;">${formatDateJP(doc.date)}</div>
-                <div style="margin-top:10px;">
-                    株式会社メカワーク<br>
-                    〒551-0003 大阪府大阪市大正区千島2-4UR 千島団地2-611<br>
-                    TEL：070-3537-4004<br>
-                    Email: motoyuki5611@gmail.com<br>
-                    登録番号：T8120001266455
-                </div>
-            </div>
-        </div>
-
-        <hr style="border: none; border-top: 2px solid #333; margin:20px 0;">
-
-        <table style="width:100%; border-collapse:collapse; margin:18px 0;">
-            <thead>
-                <tr style="background:#eef2fa;">
-                    <th style="border:1px solid #ccc; padding:10px; width:12%;">日付</th>
-                    <th style="border:1px solid #ccc; padding:10px; width:15%;">車両番号</th>
-                    <th style="border:1px solid #ccc; padding:10px; width:25%;">作業内容</th>
-                    <th style="border:1px solid #ccc; padding:10px; width:10%;">数量</th>
-                    <th style="border:1px solid #ccc; padding:10px; width:13%;">単価</th>
-                    <th style="border:1px solid #ccc; padding:10px; width:15%;">金額(税抜)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="border:1px solid #ccc; padding:10px; text-align:center;">${formatDateJP(doc.date)}</td>
-                    <td style="border:1px solid #ccc; padding:10px;">${doc.vehicle || ""}</td>
-                    <td style="border:1px solid #ccc; padding:10px;">${doc.work || ""}</td>
-                    <td style="border:1px solid #ccc; padding:10px; text-align:center;">${doc.qty || ""}</td>
-                    <td style="border:1px solid #ccc; padding:10px; text-align:right;">${formatMoney(doc.price)}</td>
-                    <td style="border:1px solid #ccc; padding:10px; text-align:right;">${formatMoney(doc.amount)}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="total-area" style="text-align:right; margin-top:24px; padding-right:10px;">
-            小計: ${formatMoney(doc.amount)}<br>
-            消費税(10%): ${formatMoney(tax)}<br>
-            <strong style="font-size:1.2rem;">合計(税込): ${formatMoney(totalIncTax)}</strong>
-        </div>
-    </div>
-`;
+        `;
         const displayDiv = document.getElementById("documentDisplay");
         if(displayDiv) displayDiv.innerHTML = previewHtml;
         
@@ -696,12 +714,12 @@
     document.getElementById("newPrice")?.addEventListener("input", autoCalcAmount);
     document.getElementById("linkCalc")?.addEventListener("change", autoCalcAmount);
     
-    // 初期設定：今日の日付セット
+    // 初期設定
+    loadData(); // ★ 追加：起動時にデータ読み込み
     const todayStr = new Date().toISOString().split('T')[0];
     if(document.getElementById("newDate")) document.getElementById("newDate").value = todayStr;
     
     // 初回描画
     refreshAll();
 </script>
-</body>
 </html>
