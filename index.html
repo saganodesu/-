@@ -294,32 +294,33 @@
             border-bottom-color: #1f688e;
         }
 
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                margin: 0;
-            }
-            .corporate-header, .tab-bar, .btn-primary, .action-group, .btn-icon, .stats-dashboard, .form-grid, #selectDocument, .print-btn, .tab, .data-table-wrapper, #statsTable {
-                display: none !important;
-            }
-            .panel-base, .panel-base.active-panel {
-                display: block !important;
-                padding: 0;
-                background: white;
-            }
-            .doc-viewer {
-                box-shadow: none;
-                padding: 0;
-                background: white;
-            }
-            .document-header, .document-table, .total-area {
-                break-inside: avoid;
-            }
-            .doc-input-field {
-                border: none;
-            }
-        }
+@media print {
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+    }
+    /* 印刷時に消したい要素を全部ここに書く */
+    .corporate-header, .tab-bar, .btn-primary, .action-group, .btn-icon, .stats-dashboard, .form-grid, #selectDocument, .print-btn, .tab, .data-table-wrapper, #statsTable, label[for="selectDocument"] {
+        display: none !important;
+    }
+    .panel-base, .panel-base.active-panel {
+        display: block !important;
+        padding: 0;
+        background: white;
+    }
+    .doc-viewer {
+        box-shadow: none;
+        padding: 0;
+        background: white;
+    }
+    .document-header, .document-table, .total-area {
+        break-inside: avoid;
+    }
+    .doc-input-field {
+        border: none;
+    }
+}
     </style>
 </head>
 <body>
