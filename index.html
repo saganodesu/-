@@ -34,7 +34,6 @@
             align-items: center;
             flex-wrap: wrap;
             box-shadow: 0 12px 18px -8px rgba(0,0,0,0.2);
-            transition: all 0.2s;
         }
 
         .brand h1 {
@@ -57,7 +56,6 @@
             background: rgba(255,255,255,0.08);
             padding: 10px 18px;
             border-radius: 40px;
-            backdrop-filter: blur(2px);
         }
 
         /* タブ */
@@ -103,7 +101,6 @@
             border-radius: 28px;
             padding: 28px 30px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            transition: 0.2s;
         }
 
         .panel-base.active-panel {
@@ -130,7 +127,6 @@
             padding: 14px 8px;
             font-weight: 600;
             text-align: center;
-            font-size: 0.85rem;
         }
 
         .modern-table td {
@@ -142,14 +138,6 @@
 
         .modern-table tr:hover {
             background: #f8fafd;
-        }
-
-        .badge-quote {
-            background: #e9ecef;
-            padding: 4px 8px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            font-weight: 600;
         }
 
         .action-group {
@@ -166,7 +154,6 @@
             border-radius: 30px;
             cursor: pointer;
             font-weight: 500;
-            transition: 0.15s;
         }
 
         .btn-edit {
@@ -189,16 +176,17 @@
             margin-bottom: 28px;
         }
 
-        .input-field {
+        .input-field, select {
             width: 100%;
             padding: 12px 14px;
             border: 1px solid #cfdfed;
             border-radius: 18px;
             font-size: 0.9rem;
             transition: 0.2s;
+            background: white;
         }
 
-        .input-field:focus {
+        .input-field:focus, select:focus {
             border-color: #1f688e;
             outline: none;
             box-shadow: 0 0 0 3px rgba(31,104,142,0.2);
@@ -229,7 +217,7 @@
             background: #0f4b68;
         }
 
-        /* 書類印刷エリア */
+        /* 書類印刷エリア (画像のようなデザイン) */
         .doc-viewer {
             background: #fefef7;
             border-radius: 24px;
@@ -238,48 +226,81 @@
             border: 1px solid #e2dcd0;
         }
 
-        .print-style {
+        /* 見積/請求書のスタイル（画像イメージを上部に再現） */
+        .invoice-template {
+            font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
             background: white;
+            padding: 20px;
+            max-width: 100%;
         }
-
-        /* 統計カード */
-        .stats-dashboard {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .stat-card-modern {
-            background: linear-gradient(115deg, #143e58, #1e5a7c);
-            flex: 1;
-            min-width: 180px;
-            padding: 22px 12px;
-            border-radius: 28px;
-            color: white;
+        .invoice-header-logo {
             text-align: center;
-            box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+            margin-bottom: 28px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #1e3a5f;
         }
-
-        .stat-card-modern h4 {
-            font-size: 0.9rem;
-            font-weight: 400;
-            letter-spacing: 1px;
+        .invoice-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #1e3a5f;
         }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-top: 8px;
+        .invoice-sub {
+            font-size: 0.75rem;
+            color: #4a627a;
+            margin-top: 6px;
         }
-
+        .invoice-to {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+        .customer-box {
+            background: #f4f7fc;
+            padding: 12px 20px;
+            border-radius: 12px;
+            min-width: 220px;
+        }
+        .date-box {
+            text-align: right;
+        }
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .item-table th {
+            background: #eef2fa;
+            border: 1px solid #ccd7e6;
+            padding: 12px;
+            text-align: center;
+        }
+        .item-table td {
+            border: 1px solid #ccd7e6;
+            padding: 10px;
+        }
+        .total-row {
+            text-align: right;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 2px solid #ccc;
+        }
+        .company-footer {
+            margin-top: 40px;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #5f6f82;
+            border-top: 1px dashed #bbb;
+            padding-top: 18px;
+        }
         @media print {
             body {
                 background: white;
                 padding: 0;
                 margin: 0;
             }
-            .corporate-header, .tab-bar, .btn-primary, .action-group, .btn-icon, .stats-dashboard, .form-grid, #selectDocument, .print-btn, .tab, .data-table-wrapper, #statsTable {
+            .corporate-header, .tab-bar, .btn-primary, .action-group, .stats-dashboard, .form-grid, #selectDocument, .print-btn, .tab, .data-table-wrapper {
                 display: none !important;
             }
             .panel-base, .panel-base.active-panel {
@@ -290,17 +311,23 @@
             .doc-viewer {
                 box-shadow: none;
                 padding: 0;
+                margin: 0;
                 background: white;
             }
-            .document-header, .document-table, .total-area {
-                break-inside: avoid;
-            }
+        }
+        .customer-history {
+            font-size: 0.75rem;
+            margin-top: 6px;
+            color: #2c7a4a;
+        }
+        datalist {
+            width: 100%;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- ヘッダー（企業情報） -->
+    <!-- ヘッダー -->
     <div class="corporate-header">
         <div class="brand">
             <h1>📄 見積書・請求書システム</h1>
@@ -326,28 +353,27 @@
         <div class="data-table-wrapper">
             <table class="modern-table" id="mainDataTable">
                 <thead>
-                    <tr>
-                        <th>ID</th><th>日付</th><th>種別</th><th>顧客名</th><th>車両</th><th>作業内容</th>
+                    <tr><th>ID</th><th>日付</th><th>種別</th><th>顧客名</th><th>車両</th><th>作業内容</th>
                         <th>数量</th><th>単価</th><th>金額(税抜)</th><th>依頼主</th><th>操作</th>
                     </tr>
                 </thead>
-                <tbody id="listTableBody">
-                    <!-- 初期データなし -->
-                </tbody>
+                <tbody id="listTableBody"></tbody>
             </table>
         </div>
+        <div style="margin-top: 16px; font-size: 0.75rem; color: #4a627a;">※ 編集で金額変更、削除可能</div>
     </div>
 
-    <!-- パネル2: 新規登録 -->
+    <!-- パネル2: 新規登録 (顧客名補完機能付き) -->
     <div id="addPanel" class="panel-base">
         <h3 style="margin-bottom: 22px; font-weight: 600;">✨ 新規案件登録</h3>
         <div class="form-grid">
             <div><label>📅 日付</label><input type="date" id="newDate" class="input-field"></div>
             <div><label>📄 書類種別</label><select id="newType" class="input-field"><option>見積書</option><option>請求書</option></select></div>
             <div>
-                <label>🏢 顧客名</label>
-                <input list="customerList" id="newCustomer" class="input-field" placeholder="例：いすゞ自動車近畿">
-                <datalist id="customerList"></datalist>
+                <label>🏢 顧客名 <span style="font-size:0.7rem;">(過去入力から補完)</span></label>
+                <input type="text" id="newCustomer" class="input-field" list="customerHistoryList" placeholder="例：古川自動車販売株式会社" autocomplete="off">
+                <datalist id="customerHistoryList"></datalist>
+                <div class="customer-history" id="customerHint"></div>
             </div>
             <div><label>🚛 車両</label><input type="text" id="newVehicle" class="input-field" placeholder="例：大阪100か1234"></div>
             <div><label>🔧 作業内容</label><input type="text" id="newWork" class="input-field" placeholder="例：ラジエーター交換"></div>
@@ -359,7 +385,7 @@
         <button class="btn-primary" onclick="registerNewRecord()">✅ 登録する</button>
     </div>
 
-    <!-- パネル3: 書類印刷 & プレビュー -->
+    <!-- パネル3: 書類印刷 (画像イメージ風の上部デザイン + 顧客保存履歴反映) -->
     <div id="printPanel" class="panel-base">
         <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 25px;">
             <div style="flex:1">
@@ -370,17 +396,18 @@
                 <button class="btn-primary print-btn" onclick="generateDocumentAndPrint()">🖨️ 印刷 / PDF保存</button>
             </div>
         </div>
-        <div id="documentDisplay" class="doc-viewer"></div>
+        <div id="documentDisplay" class="doc-viewer">
+            <!-- 初期はサンプル案内 -->
+            <div class="invoice-template" style="text-align:center; color:#9aaebf;">書類を選択すると、見積/請求書がプレビュー表示されます。</div>
+        </div>
     </div>
 
     <!-- パネル4: 集計 -->
     <div id="statsPanel" class="panel-base">
-        <div class="stats-dashboard" id="statsCardsContainer"></div>
+        <div class="stats-dashboard" id="statsCardsContainer" style="display: flex; gap:20px; flex-wrap:wrap; margin-bottom:30px;"></div>
         <div class="data-table-wrapper">
             <table class="modern-table" id="summaryByCustomer">
-                <thead>
-                    <tr><th>顧客名</th><th>発行件数</th><th>合計金額(税抜)</th><th>消費税(10%)</th><th>税込合計</th></tr>
-                </thead>
+                <thead><tr><th>顧客名</th><th>発行件数</th><th>合計金額(税抜)</th><th>消費税(10%)</th><th>税込合計</th></tr></thead>
                 <tbody id="statsTableBody"></tbody>
             </table>
         </div>
@@ -388,4 +415,364 @@
 </div>
 
 <script>
-    // ---------- データ保存用 (最初は空) ----------
+    // ---------- 初期データ : 完全に空 (何も入れない) ----------
+    let documents = [];   // 最初は空配列。ユーザが登録した分だけ保存
+
+    // 顧客名の履歴を管理するSet (localStorageに保存)
+    let customerHistorySet = new Set();
+
+    // localStorageから顧客履歴を読み込み
+    function loadCustomerHistory() {
+        const stored = localStorage.getItem("mechawork_customer_history");
+        if(stored) {
+            try{
+                const arr = JSON.parse(stored);
+                if(Array.isArray(arr)){
+                    arr.forEach(name => { if(name && name.trim()) customerHistorySet.add(name.trim()); });
+                }
+            }catch(e){}
+        }
+        updateDatalist();
+    }
+
+    // 新しい顧客名を履歴に追加 (重複なし)
+    function addCustomerToHistory(customerName) {
+        if(customerName && customerName.trim() !== "") {
+            const cleanName = customerName.trim();
+            customerHistorySet.add(cleanName);
+            // 最新10件程度に制限しても良いが、Setをそのまま保存
+            saveCustomerHistory();
+            updateDatalist();
+        }
+    }
+
+    function saveCustomerHistory() {
+        const arr = Array.from(customerHistorySet);
+        localStorage.setItem("mechawork_customer_history", JSON.stringify(arr));
+    }
+
+    function updateDatalist() {
+        const datalist = document.getElementById("customerHistoryList");
+        if(datalist) {
+            datalist.innerHTML = "";
+            const sorted = Array.from(customerHistorySet).sort();
+            sorted.forEach(name => {
+                const option = document.createElement("option");
+                option.value = name;
+                datalist.appendChild(option);
+            });
+        }
+        const hintDiv = document.getElementById("customerHint");
+        if(hintDiv && customerHistorySet.size > 0) {
+            hintDiv.innerHTML = `💡 履歴: ${Array.from(customerHistorySet).slice(0,5).join(", ")}${customerHistorySet.size>5 ? "…" : ""}`;
+        } else if(hintDiv){
+            hintDiv.innerHTML = "📝 入力した顧客名は記憶されます。次回から補完候補に表示。";
+        }
+    }
+
+    // ヘルパー関数
+    function formatDateJP(dateStr) {
+        if(!dateStr) return "";
+        const d = new Date(dateStr);
+        if(isNaN(d.getTime())) return dateStr;
+        return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+    }
+
+    function formatMoney(amount) {
+        if(amount === undefined || amount === null) amount = 0;
+        return amount.toLocaleString('ja-JP') + "円";
+    }
+
+    // 全体更新
+    function refreshAll() {
+        renderListTable();
+        updateSelectOptions();
+        updateStatsAndDashboard();
+    }
+
+    function renderListTable() {
+        const tbody = document.getElementById("listTableBody");
+        if(!tbody) return;
+        tbody.innerHTML = "";
+        if(documents.length === 0){
+            tbody.innerHTML = "<tr><td colspan='11' style='text-align:center; padding:40px;'>📭 まだデータがありません。新規登録タブから案件を追加してください。</td></tr>";
+            return;
+        }
+        documents.forEach(doc => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = doc.id;
+            row.insertCell(1).innerText = formatDateJP(doc.date);
+            row.insertCell(2).innerHTML = `<span style="background:#e9ecef; padding:4px 10px; border-radius:20px;">${doc.type}</span>`;
+            row.insertCell(3).innerText = doc.customer || "—";
+            row.insertCell(4).innerText = doc.vehicle || "—";
+            row.insertCell(5).innerText = doc.work.length > 35 ? doc.work.slice(0,32)+"…" : doc.work;
+            row.insertCell(6).innerText = doc.qty;
+            row.insertCell(7).innerText = formatMoney(doc.price);
+            row.insertCell(8).innerText = formatMoney(doc.amount);
+            row.insertCell(9).innerText = doc.requester || "—";
+            const actionCell = row.insertCell(10);
+            actionCell.className = "action-group";
+            actionCell.innerHTML = `<button class="btn-icon btn-edit" onclick="editRecordById(${doc.id})">編集</button>
+                                    <button class="btn-icon btn-delete" onclick="deleteRecordById(${doc.id})">削除</button>`;
+        });
+    }
+
+    window.editRecordById = function(id) {
+        const doc = documents.find(d => d.id === id);
+        if(!doc) return;
+        let newAmount = prompt(`「${doc.customer || "顧客"}」の金額(税抜)を編集`, doc.amount);
+        if(newAmount !== null && !isNaN(parseFloat(newAmount))) {
+            const updatedAmount = parseInt(newAmount);
+            if(!isNaN(updatedAmount) && updatedAmount >= 0) {
+                doc.amount = updatedAmount;
+                // 単価と数量は維持のまま簡易編集。必要なら再計算も可能だがシンプルに
+                refreshAll();
+            }
+        }
+    };
+
+    window.deleteRecordById = function(id) {
+        if(confirm("この案件を削除しますか？")) {
+            documents = documents.filter(d => d.id !== id);
+            refreshAll();
+        }
+    };
+
+    // 新規登録 (顧客名を記憶)
+    window.registerNewRecord = function() {
+        const newDate = document.getElementById("newDate").value;
+        const newType = document.getElementById("newType").value;
+        const newCustomer = document.getElementById("newCustomer").value.trim();
+        const newVehicle = document.getElementById("newVehicle").value.trim();
+        const newWork = document.getElementById("newWork").value.trim();
+        const newRequester = document.getElementById("newRequester").value.trim();
+        let newQty = parseInt(document.getElementById("newQty").value);
+        let newPrice = parseInt(document.getElementById("newPrice").value);
+        
+        if(!newDate) { alert("日付を選択してください"); return; }
+        if(!newCustomer) { alert("顧客名を入力してください"); return; }
+        if(isNaN(newQty) || newQty<1) newQty = 1;
+        if(isNaN(newPrice)) newPrice = 0;
+        
+        const newAmountVal = newQty * newPrice;
+        const newId = documents.length > 0 ? Math.max(...documents.map(d=>d.id)) + 1 : 1;
+        
+        documents.push({
+            id: newId, date: newDate, type: newType, customer: newCustomer,
+            vehicle: newVehicle, work: newWork || "作業内容未登録", qty: newQty,
+            price: newPrice, amount: newAmountVal, requester: newRequester
+        });
+        
+        // 顧客名を履歴に追加
+        addCustomerToHistory(newCustomer);
+        
+        // フォームリセット（日付だけは今日の日付を保持してもよい）
+        document.getElementById("newCustomer").value = "";
+        document.getElementById("newVehicle").value = "";
+        document.getElementById("newWork").value = "";
+        document.getElementById("newRequester").value = "";
+        document.getElementById("newQty").value = "1";
+        document.getElementById("newPrice").value = "0";
+        document.getElementById("newAmount").value = "";
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("newDate").value = today;
+        
+        refreshAll();
+        alert(`✅ 新規ID: ${newId} を登録しました。`);
+        switchTab("list");
+    };
+
+    function updateSelectOptions() {
+        const select = document.getElementById("selectDocument");
+        if(!select) return;
+        if(documents.length === 0){
+            select.innerHTML = '<option value="">-- データがありません --</option>';
+            return;
+        }
+        let options = '<option value="">-- 書類を選択 --</option>';
+        documents.forEach(doc => {
+            options += `<option value="${doc.id}">${doc.id}: ${doc.customer} (${formatDateJP(doc.date)}) - ${doc.type}</option>`;
+        });
+        select.innerHTML = options;
+    }
+
+    // プレビュー＆印刷 (画像イメージのような上部デザインを実現)
+    window.generateDocumentAndPrint = function() {
+        const idVal = document.getElementById("selectDocument").value;
+        if(!idVal) { alert("発行する書類のIDを選択してください"); return; }
+        const doc = documents.find(d => d.id == idVal);
+        if(!doc) return;
+        
+        const tax = Math.floor(doc.amount * 0.1);
+        const totalIncTax = doc.amount + tax;
+        
+        // 画像イメージ通りの見た目（請求書／見積書 上部に大きく書類種別＋会社情報を表示）
+        const printHtml = `
+        <div class="invoice-template">
+            <!-- 上部イメージ（画像の雰囲気） -->
+            <div class="invoice-header-logo">
+                <div class="invoice-title">${doc.type}</div>
+                <div class="invoice-sub">株式会社メカワーク</div>
+                <div style="font-size:0.7rem; margin-top:5px;">〒551-0003 大阪府大阪市大正区千島2-4UR 千島団地2-611</div>
+            </div>
+            
+            <div class="invoice-to">
+                <div class="customer-box">
+                    <strong>${doc.customer || "----"}</strong> 御中<br>
+                    <span style="font-size:0.75rem;">${doc.requester ? `担当: ${doc.requester}` : ""}</span>
+                </div>
+                <div class="date-box">
+                    発行日: ${formatDateJP(doc.date)}<br>
+                    書類No. ${doc.id}
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px; font-weight:500;">件名： ${doc.work || "作業工賃"}</div>
+            
+            <table class="item-table">
+                <thead>
+                    <tr><th>車両</th><th>作業内容</th><th>数量</th><th>単価</th><th>金額(税抜)</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${doc.vehicle || "—"}</td>
+                        <td>${doc.work || "—"}</td>
+                        <td>${doc.qty}</td>
+                        <td>${formatMoney(doc.price)}</td>
+                        <td>${formatMoney(doc.amount)}</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="total-row">
+                小計：${formatMoney(doc.amount)}<br>
+                消費税(10%)：${formatMoney(tax)}<br>
+                <strong style="font-size:1.2rem;">合計金額（税込）：${formatMoney(totalIncTax)}</strong>
+            </div>
+            
+            <div class="company-footer">
+                株式会社メカワーク  〒551-0003 大阪府大阪市大正区千島2-4UR<br>
+                TEL：070-3537-4004  /  Email：motoyuki5611@gmail.com<br>
+                登録番号：T8120001266455
+            </div>
+        </div>
+        `;
+        
+        const displayDiv = document.getElementById("documentDisplay");
+        if(displayDiv) displayDiv.innerHTML = printHtml;
+        
+        setTimeout(() => {
+            window.print();
+        }, 120);
+    };
+    
+    // 集計とダッシュボード
+    function updateStatsAndDashboard() {
+        const totalAmountSum = documents.reduce((sum,d)=> sum + d.amount,0);
+        const totalTaxSum = Math.floor(totalAmountSum * 0.1);
+        const totalWithTax = totalAmountSum + totalTaxSum;
+        const totalCount = documents.length;
+        const quoteCount = documents.filter(d=> d.type === "見積書").length;
+        const invoiceCount = documents.filter(d=> d.type === "請求書").length;
+        
+        const statsContainer = document.getElementById("statsCardsContainer");
+        if(statsContainer){
+            statsContainer.innerHTML = `
+                <div style="background:linear-gradient(115deg,#143e58,#1e5a7c); flex:1; min-width:180px; padding:22px; border-radius:28px; color:white; text-align:center;">
+                    <h4>総案件数</h4><div style="font-size:2.5rem; font-weight:800;">${totalCount}</div>
+                </div>
+                <div style="background:linear-gradient(115deg,#1f5575,#206f97); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;">
+                    <h4>見積書</h4><div style="font-size:2.5rem;">${quoteCount}</div>
+                </div>
+                <div style="background:linear-gradient(115deg,#1f5575,#206f97); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;">
+                    <h4>請求書</h4><div style="font-size:2.5rem;">${invoiceCount}</div>
+                </div>
+                <div style="background:linear-gradient(115deg,#164b67,#2b7aa3); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;">
+                    <h4>総売上(税込)</h4><div style="font-size:2rem;">${formatMoney(totalWithTax)}</div>
+                </div>
+            `;
+        }
+        
+        // 顧客別集計
+        const customerAgg = new Map();
+        documents.forEach(d => {
+            if(!d.customer) return;
+            if(!customerAgg.has(d.customer)){
+                customerAgg.set(d.customer, {count:0, amount:0});
+            }
+            const rec = customerAgg.get(d.customer);
+            rec.count++;
+            rec.amount += d.amount;
+        });
+        const statsBody = document.getElementById("statsTableBody");
+        if(statsBody){
+            statsBody.innerHTML = "";
+            if(customerAgg.size === 0){
+                statsBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:32px;'>データがありません</td></tr>";
+                return;
+            }
+            for(let [cust, data] of customerAgg.entries()){
+                const taxVal = Math.floor(data.amount * 0.1);
+                const row = statsBody.insertRow();
+                row.insertCell(0).innerText = cust;
+                row.insertCell(1).innerText = data.count;
+                row.insertCell(2).innerText = formatMoney(data.amount);
+                row.insertCell(3).innerText = formatMoney(taxVal);
+                row.insertCell(4).innerText = formatMoney(data.amount + taxVal);
+            }
+        }
+    }
+    
+    function autoCalcAmount() {
+        const qty = parseInt(document.getElementById("newQty")?.value) || 0;
+        const price = parseInt(document.getElementById("newPrice")?.value) || 0;
+        const amountField = document.getElementById("newAmount");
+        if(amountField) amountField.value = formatMoney(qty * price);
+    }
+    
+    function switchTab(tabId) {
+        document.querySelectorAll(".panel-base").forEach(panel => panel.classList.remove("active-panel"));
+        document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+        if(tabId === "list") document.getElementById("listPanel").classList.add("active-panel");
+        else if(tabId === "add") document.getElementById("addPanel").classList.add("active-panel");
+        else if(tabId === "print") document.getElementById("printPanel").classList.add("active-panel");
+        else if(tabId === "stats") document.getElementById("statsPanel").classList.add("active-panel");
+        const targetBtn = Array.from(document.querySelectorAll(".tab")).find(btn => btn.dataset.tab === tabId);
+        if(targetBtn) targetBtn.classList.add("active");
+        if(tabId === "print" && documents.length>0 && !document.getElementById("selectDocument").value){
+            const sel = document.getElementById("selectDocument");
+            if(sel && sel.options.length>1) sel.value = documents[0].id;
+        }
+    }
+    
+    // イベント紐付け
+    document.querySelectorAll(".tab").forEach(btn => {
+        btn.addEventListener("click", (e) => switchTab(btn.dataset.tab));
+    });
+    document.getElementById("newQty")?.addEventListener("input", autoCalcAmount);
+    document.getElementById("newPrice")?.addEventListener("input", autoCalcAmount);
+    
+    // 初期設定
+    const todayStr = new Date().toISOString().split('T')[0];
+    if(document.getElementById("newDate")) document.getElementById("newDate").value = todayStr;
+    
+    // 顧客履歴ロード & 空データで表示更新
+    loadCustomerHistory();
+    refreshAll();   // 空テーブル表示
+    autoCalcAmount();
+    
+    // プレビューエリアの初期イメージ（画像のようなメッセージ）
+    if(documents.length === 0){
+        const displayDiv = document.getElementById("documentDisplay");
+        if(displayDiv){
+            displayDiv.innerHTML = `<div class="invoice-template" style="text-align:center; padding:30px; color:#1e3a5f;">
+                <div class="invoice-title" style="font-size:1.8rem;">見積書 / 請求書</div>
+                <div style="margin: 20px 0;">データを登録すると、ここに書類が表示されます。</div>
+                <div style="font-size:0.8rem;">⬆️ 新規登録タブから案件を追加してください。</div>
+                <div style="margin-top: 16px; border-top:1px solid #ccc; padding-top:12px;">株式会社メカワーク</div>
+            </div>`;
+        }
+    }
+</script>
+</body>
+</html>
