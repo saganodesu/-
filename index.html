@@ -199,6 +199,20 @@
             color: #1a3a5c;
         }
 
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .checkbox-label input {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+        }
+
         .btn-primary {
             background: linear-gradient(95deg, #165a7a, #0d3f58);
             border: none;
@@ -217,7 +231,7 @@
             background: #0f4b68;
         }
 
-        /* 書類印刷エリア (画像のようなデザイン) */
+        /* 書類印刷エリア */
         .doc-viewer {
             background: #fefef7;
             border-radius: 24px;
@@ -226,7 +240,6 @@
             border: 1px solid #e2dcd0;
         }
 
-        /* 見積/請求書のスタイル（画像イメージを上部に再現） */
         .invoice-template {
             font-family: 'Hiragino Kaku Gothic Pro', 'Meiryo', sans-serif;
             background: white;
@@ -245,11 +258,6 @@
             letter-spacing: 4px;
             color: #1e3a5f;
         }
-        .invoice-sub {
-            font-size: 0.75rem;
-            color: #4a627a;
-            margin-top: 6px;
-        }
         .invoice-to {
             display: flex;
             justify-content: space-between;
@@ -261,9 +269,6 @@
             padding: 12px 20px;
             border-radius: 12px;
             min-width: 220px;
-        }
-        .date-box {
-            text-align: right;
         }
         .item-table {
             width: 100%;
@@ -294,6 +299,11 @@
             border-top: 1px dashed #bbb;
             padding-top: 18px;
         }
+        .history-hint {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            color: #2c7a4a;
+        }
         @media print {
             body {
                 background: white;
@@ -315,19 +325,10 @@
                 background: white;
             }
         }
-        .customer-history {
-            font-size: 0.75rem;
-            margin-top: 6px;
-            color: #2c7a4a;
-        }
-        datalist {
-            width: 100%;
-        }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- ヘッダー -->
     <div class="corporate-header">
         <div class="brand">
             <h1>📄 見積書・請求書システム</h1>
@@ -340,7 +341,6 @@
         </div>
     </div>
 
-    <!-- タブメニュー -->
     <div class="tab-bar">
         <button class="tab active" data-tab="list">📋 一覧表示</button>
         <button class="tab" data-tab="add">➕ 新規登録</button>
@@ -348,154 +348,271 @@
         <button class="tab" data-tab="stats">📊 集計ダッシュボード</button>
     </div>
 
-    <!-- パネル1: 一覧表示 -->
+    <!-- 一覧表示パネル -->
     <div id="listPanel" class="panel-base active-panel">
         <div class="data-table-wrapper">
             <table class="modern-table" id="mainDataTable">
-                <thead>
-                    <tr><th>ID</th><th>日付</th><th>種別</th><th>顧客名</th><th>車両</th><th>作業内容</th>
+                <thead><tr><th>ID</th><th>日付</th><th>種別</th><th>顧客名</th><th>車両</th><th>作業内容</th>
                         <th>数量</th><th>単価</th><th>金額(税抜)</th><th>依頼主</th><th>操作</th>
-                    </tr>
-                </thead>
+                </tr></thead>
                 <tbody id="listTableBody"></tbody>
             </table>
         </div>
-        <div style="margin-top: 16px; font-size: 0.75rem; color: #4a627a;">※ 編集で金額変更、削除可能</div>
     </div>
 
-    <!-- パネル2: 新規登録 (顧客名補完機能付き) -->
+    <!-- 新規登録パネル (連動チェックボックス + 作業内容履歴) -->
     <div id="addPanel" class="panel-base">
         <h3 style="margin-bottom: 22px; font-weight: 600;">✨ 新規案件登録</h3>
         <div class="form-grid">
             <div><label>📅 日付</label><input type="date" id="newDate" class="input-field"></div>
             <div><label>📄 書類種別</label><select id="newType" class="input-field"><option>見積書</option><option>請求書</option></select></div>
             <div>
-                <label>🏢 顧客名 <span style="font-size:0.7rem;">(過去入力から補完)</span></label>
+                <label>🏢 顧客名 <span style="font-size:0.7rem;">(履歴補完)</span></label>
                 <input type="text" id="newCustomer" class="input-field" list="customerHistoryList" placeholder="例：古川自動車販売株式会社" autocomplete="off">
                 <datalist id="customerHistoryList"></datalist>
-                <div class="customer-history" id="customerHint"></div>
+                <div class="history-hint" id="customerHint"></div>
             </div>
             <div><label>🚛 車両</label><input type="text" id="newVehicle" class="input-field" placeholder="例：大阪100か1234"></div>
-            <div><label>🔧 作業内容</label><input type="text" id="newWork" class="input-field" placeholder="例：ラジエーター交換"></div>
+            <div>
+                <label>🔧 作業内容 <span style="font-size:0.7rem;">(履歴補完)</span></label>
+                <input type="text" id="newWork" class="input-field" list="workHistoryList" placeholder="例：ラジエーター交換" autocomplete="off">
+                <datalist id="workHistoryList"></datalist>
+                <div class="history-hint" id="workHint"></div>
+            </div>
             <div><label>👤 依頼主</label><input type="text" id="newRequester" class="input-field" placeholder="例：河合様"></div>
             <div><label>🔢 数量</label><input type="number" id="newQty" class="input-field" value="1" min="1"></div>
             <div><label>💰 単価 (円)</label><input type="number" id="newPrice" class="input-field" value="0" min="0"></div>
-            <div><label>🧾 小計金額 (自動)</label><input type="text" id="newAmount" class="input-field" readonly style="background:#f1f5f9;"></div>
+            <div>
+                <label>🧾 金額 (税抜)</label>
+                <input type="text" id="newAmount" class="input-field" placeholder="自動計算" readonly style="background:#f1f5f9;">
+                <div style="margin-top: 10px;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="syncCheckbox" checked> 🔗 単価・数量と金額を連動する
+                    </label>
+                    <p style="font-size:0.7rem; color:#6c757d; margin-top:5px;">※チェックOFF時は金額を手動入力できます</p>
+                </div>
+            </div>
         </div>
         <button class="btn-primary" onclick="registerNewRecord()">✅ 登録する</button>
     </div>
 
-    <!-- パネル3: 書類印刷 (画像イメージ風の上部デザイン + 顧客保存履歴反映) -->
+    <!-- 書類印刷パネル -->
     <div id="printPanel" class="panel-base">
         <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 25px;">
-            <div style="flex:1">
-                <label>🔍 発行する書類を選択 (ID)</label>
-                <select id="selectDocument" class="input-field" style="width:100%;"></select>
-            </div>
-            <div>
-                <button class="btn-primary print-btn" onclick="generateDocumentAndPrint()">🖨️ 印刷 / PDF保存</button>
-            </div>
+            <div style="flex:1"><label>🔍 発行する書類を選択 (ID)</label><select id="selectDocument" class="input-field"></select></div>
+            <div><button class="btn-primary print-btn" onclick="generateDocumentAndPrint()">🖨️ 印刷 / PDF保存</button></div>
         </div>
         <div id="documentDisplay" class="doc-viewer">
-            <!-- 初期はサンプル案内 -->
             <div class="invoice-template" style="text-align:center; color:#9aaebf;">書類を選択すると、見積/請求書がプレビュー表示されます。</div>
         </div>
     </div>
 
-    <!-- パネル4: 集計 -->
+    <!-- 集計パネル -->
     <div id="statsPanel" class="panel-base">
-        <div class="stats-dashboard" id="statsCardsContainer" style="display: flex; gap:20px; flex-wrap:wrap; margin-bottom:30px;"></div>
-        <div class="data-table-wrapper">
-            <table class="modern-table" id="summaryByCustomer">
-                <thead><tr><th>顧客名</th><th>発行件数</th><th>合計金額(税抜)</th><th>消費税(10%)</th><th>税込合計</th></tr></thead>
-                <tbody id="statsTableBody"></tbody>
-            </table>
-        </div>
+        <div id="statsCardsContainer" style="display: flex; gap:20px; flex-wrap:wrap; margin-bottom:30px;"></div>
+        <div class="data-table-wrapper"><table class="modern-table"><thead><tr><th>顧客名</th><th>発行件数</th><th>合計金額(税抜)</th><th>消費税(10%)</th><th>税込合計</th></tr></thead><tbody id="statsTableBody"></tbody></table></div>
     </div>
 </div>
 
 <script>
-    // ---------- 初期データ : 完全に空 (何も入れない) ----------
-    let documents = [];   // 最初は空配列。ユーザが登録した分だけ保存
+    // ---------- データ (初期は空) ----------
+    let documents = [];
 
-    // 顧客名の履歴を管理するSet (localStorageに保存)
+    // ---------- 履歴管理 (顧客名 & 作業内容) ----------
     let customerHistorySet = new Set();
+    let workHistorySet = new Set();
 
-    // localStorageから顧客履歴を読み込み
-    function loadCustomerHistory() {
-        const stored = localStorage.getItem("mechawork_customer_history");
-        if(stored) {
-            try{
-                const arr = JSON.parse(stored);
-                if(Array.isArray(arr)){
-                    arr.forEach(name => { if(name && name.trim()) customerHistorySet.add(name.trim()); });
-                }
-            }catch(e){}
+    // ローカルストレージから読み込み
+    function loadHistories() {
+        const storedCustomers = localStorage.getItem("mechawork_customer_history");
+        if(storedCustomers) {
+            try {
+                const arr = JSON.parse(storedCustomers);
+                if(Array.isArray(arr)) arr.forEach(name => { if(name && name.trim()) customerHistorySet.add(name.trim()); });
+            } catch(e) {}
         }
-        updateDatalist();
-    }
-
-    // 新しい顧客名を履歴に追加 (重複なし)
-    function addCustomerToHistory(customerName) {
-        if(customerName && customerName.trim() !== "") {
-            const cleanName = customerName.trim();
-            customerHistorySet.add(cleanName);
-            // 最新10件程度に制限しても良いが、Setをそのまま保存
-            saveCustomerHistory();
-            updateDatalist();
+        const storedWorks = localStorage.getItem("mechawork_work_history");
+        if(storedWorks) {
+            try {
+                const arr = JSON.parse(storedWorks);
+                if(Array.isArray(arr)) arr.forEach(work => { if(work && work.trim()) workHistorySet.add(work.trim()); });
+            } catch(e) {}
         }
+        updateDatalists();
     }
 
     function saveCustomerHistory() {
-        const arr = Array.from(customerHistorySet);
-        localStorage.setItem("mechawork_customer_history", JSON.stringify(arr));
+        localStorage.setItem("mechawork_customer_history", JSON.stringify(Array.from(customerHistorySet)));
+    }
+    function saveWorkHistory() {
+        localStorage.setItem("mechawork_work_history", JSON.stringify(Array.from(workHistorySet)));
     }
 
-    function updateDatalist() {
-        const datalist = document.getElementById("customerHistoryList");
-        if(datalist) {
-            datalist.innerHTML = "";
-            const sorted = Array.from(customerHistorySet).sort();
-            sorted.forEach(name => {
-                const option = document.createElement("option");
-                option.value = name;
-                datalist.appendChild(option);
+    function addCustomerToHistory(name) {
+        if(name && name.trim()) {
+            customerHistorySet.add(name.trim());
+            saveCustomerHistory();
+            updateDatalists();
+        }
+    }
+    function addWorkToHistory(work) {
+        if(work && work.trim()) {
+            workHistorySet.add(work.trim());
+            saveWorkHistory();
+            updateDatalists();
+        }
+    }
+
+    function updateDatalists() {
+        const customerDatalist = document.getElementById("customerHistoryList");
+        if(customerDatalist) {
+            customerDatalist.innerHTML = "";
+            Array.from(customerHistorySet).sort().forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                customerDatalist.appendChild(opt);
             });
         }
-        const hintDiv = document.getElementById("customerHint");
-        if(hintDiv && customerHistorySet.size > 0) {
-            hintDiv.innerHTML = `💡 履歴: ${Array.from(customerHistorySet).slice(0,5).join(", ")}${customerHistorySet.size>5 ? "…" : ""}`;
-        } else if(hintDiv){
-            hintDiv.innerHTML = "📝 入力した顧客名は記憶されます。次回から補完候補に表示。";
+        const workDatalist = document.getElementById("workHistoryList");
+        if(workDatalist) {
+            workDatalist.innerHTML = "";
+            Array.from(workHistorySet).sort().forEach(work => {
+                const opt = document.createElement("option");
+                opt.value = work;
+                workDatalist.appendChild(opt);
+            });
+        }
+        const customerHint = document.getElementById("customerHint");
+        if(customerHint) {
+            const preview = Array.from(customerHistorySet).slice(0,4).join(", ");
+            customerHint.innerHTML = preview ? `💡 最近: ${preview}${customerHistorySet.size>4 ? "…" : ""}` : "📝 入力した顧客名を記憶します";
+        }
+        const workHint = document.getElementById("workHint");
+        if(workHint) {
+            const preview = Array.from(workHistorySet).slice(0,4).join(", ");
+            workHint.innerHTML = preview ? `🔧 最近: ${preview}${workHistorySet.size>4 ? "…" : ""}` : "📝 作業内容も記憶します";
         }
     }
 
-    // ヘルパー関数
-    function formatDateJP(dateStr) {
-        if(!dateStr) return "";
-        const d = new Date(dateStr);
-        if(isNaN(d.getTime())) return dateStr;
-        return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+    // ---------- 金額連動ロジック (チェックボックス制御) ----------
+    let isSyncEnabled = true;  // デフォルト連動ON
+
+    function updateAmountFromSync() {
+        if(!isSyncEnabled) return;
+        const qty = parseInt(document.getElementById("newQty")?.value) || 0;
+        const price = parseInt(document.getElementById("newPrice")?.value) || 0;
+        const amountField = document.getElementById("newAmount");
+        if(amountField) {
+            const computed = qty * price;
+            amountField.value = formatMoneyValue(computed);
+        }
     }
 
-    function formatMoney(amount) {
-        if(amount === undefined || amount === null) amount = 0;
+    // 手動で金額変更された場合（連動OFF時）
+    function onManualAmountChange() {
+        if(!isSyncEnabled) {
+            // 手動入力値をパースして保持するだけ（次回連動ONに備えて処理しない）
+            const amountField = document.getElementById("newAmount");
+            if(amountField) {
+                let raw = amountField.value.replace(/[^0-9]/g, '');
+                let num = parseInt(raw) || 0;
+                amountField.value = formatMoneyValue(num);
+            }
+        }
+    }
+
+    function formatMoneyValue(amount) {
         return amount.toLocaleString('ja-JP') + "円";
     }
-
-    // 全体更新
-    function refreshAll() {
-        renderListTable();
-        updateSelectOptions();
-        updateStatsAndDashboard();
+    function parseMoneyValue(str) {
+        if(!str) return 0;
+        const cleaned = str.replace(/[^0-9]/g, '');
+        return parseInt(cleaned) || 0;
     }
 
+    // 新規登録処理 (記憶機能 + 連動／手動金額対応)
+    window.registerNewRecord = function() {
+        const newDate = document.getElementById("newDate").value;
+        const newType = document.getElementById("newType").value;
+        const newCustomer = document.getElementById("newCustomer").value.trim();
+        const newVehicle = document.getElementById("newVehicle").value.trim();
+        const newWork = document.getElementById("newWork").value.trim();
+        const newRequester = document.getElementById("newRequester").value.trim();
+        let newQty = parseInt(document.getElementById("newQty").value);
+        let newPrice = parseInt(document.getElementById("newPrice").value);
+        
+        if(!newDate) { alert("日付を選択してください"); return; }
+        if(!newCustomer) { alert("顧客名を入力してください"); return; }
+        if(isNaN(newQty) || newQty<1) newQty = 1;
+        if(isNaN(newPrice)) newPrice = 0;
+        
+        let finalAmount = 0;
+        const syncFlag = document.getElementById("syncCheckbox").checked;
+        if(syncFlag) {
+            finalAmount = newQty * newPrice;
+        } else {
+            // 手動入力された金額を取得 (フィールドから直接パース)
+            const amountRaw = document.getElementById("newAmount").value;
+            finalAmount = parseMoneyValue(amountRaw);
+            if(isNaN(finalAmount)) finalAmount = 0;
+        }
+        
+        const newId = documents.length > 0 ? Math.max(...documents.map(d=>d.id)) + 1 : 1;
+        
+        documents.push({
+            id: newId, date: newDate, type: newType, customer: newCustomer,
+            vehicle: newVehicle, work: newWork || "作業内容未登録", qty: newQty,
+            price: newPrice, amount: finalAmount, requester: newRequester
+        });
+        
+        // 履歴追加
+        addCustomerToHistory(newCustomer);
+        if(newWork) addWorkToHistory(newWork);
+        
+        // フォームリセット (金額/数量/単価はデフォルト値に戻す)
+        document.getElementById("newCustomer").value = "";
+        document.getElementById("newVehicle").value = "";
+        document.getElementById("newWork").value = "";
+        document.getElementById("newRequester").value = "";
+        document.getElementById("newQty").value = "1";
+        document.getElementById("newPrice").value = "0";
+        document.getElementById("newAmount").value = "0円";
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("newDate").value = today;
+        
+        // 連動チェックボックスの状態は維持（リセットしすぎない）
+        refreshAll();
+        alert(`✅ 新規ID: ${newId} を登録しました。`);
+        switchTab("list");
+    };
+
+    // 編集機能 (金額のみ編集可能)
+    window.editRecordById = function(id) {
+        const doc = documents.find(d => d.id === id);
+        if(!doc) return;
+        let newAmount = prompt(`「${doc.customer || "顧客"}」の金額(税抜)を編集 (現在: ${doc.amount}円)`, doc.amount);
+        if(newAmount !== null && !isNaN(parseFloat(newAmount))) {
+            const updated = parseInt(newAmount);
+            if(!isNaN(updated) && updated >= 0) {
+                doc.amount = updated;
+                refreshAll();
+            }
+        }
+    };
+    window.deleteRecordById = function(id) {
+        if(confirm("この案件を削除しますか？")) {
+            documents = documents.filter(d => d.id !== id);
+            refreshAll();
+        }
+    };
+
+    // テーブル描画
     function renderListTable() {
         const tbody = document.getElementById("listTableBody");
         if(!tbody) return;
         tbody.innerHTML = "";
-        if(documents.length === 0){
-            tbody.innerHTML = "<tr><td colspan='11' style='text-align:center; padding:40px;'>📭 まだデータがありません。新規登録タブから案件を追加してください。</td></tr>";
+        if(documents.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='11' style='text-align:center; padding:40px;'>📭 まだデータがありません。新規登録タブから追加してください。</td></tr>";
             return;
         }
         documents.forEach(doc => {
@@ -517,75 +634,10 @@
         });
     }
 
-    window.editRecordById = function(id) {
-        const doc = documents.find(d => d.id === id);
-        if(!doc) return;
-        let newAmount = prompt(`「${doc.customer || "顧客"}」の金額(税抜)を編集`, doc.amount);
-        if(newAmount !== null && !isNaN(parseFloat(newAmount))) {
-            const updatedAmount = parseInt(newAmount);
-            if(!isNaN(updatedAmount) && updatedAmount >= 0) {
-                doc.amount = updatedAmount;
-                // 単価と数量は維持のまま簡易編集。必要なら再計算も可能だがシンプルに
-                refreshAll();
-            }
-        }
-    };
-
-    window.deleteRecordById = function(id) {
-        if(confirm("この案件を削除しますか？")) {
-            documents = documents.filter(d => d.id !== id);
-            refreshAll();
-        }
-    };
-
-    // 新規登録 (顧客名を記憶)
-    window.registerNewRecord = function() {
-        const newDate = document.getElementById("newDate").value;
-        const newType = document.getElementById("newType").value;
-        const newCustomer = document.getElementById("newCustomer").value.trim();
-        const newVehicle = document.getElementById("newVehicle").value.trim();
-        const newWork = document.getElementById("newWork").value.trim();
-        const newRequester = document.getElementById("newRequester").value.trim();
-        let newQty = parseInt(document.getElementById("newQty").value);
-        let newPrice = parseInt(document.getElementById("newPrice").value);
-        
-        if(!newDate) { alert("日付を選択してください"); return; }
-        if(!newCustomer) { alert("顧客名を入力してください"); return; }
-        if(isNaN(newQty) || newQty<1) newQty = 1;
-        if(isNaN(newPrice)) newPrice = 0;
-        
-        const newAmountVal = newQty * newPrice;
-        const newId = documents.length > 0 ? Math.max(...documents.map(d=>d.id)) + 1 : 1;
-        
-        documents.push({
-            id: newId, date: newDate, type: newType, customer: newCustomer,
-            vehicle: newVehicle, work: newWork || "作業内容未登録", qty: newQty,
-            price: newPrice, amount: newAmountVal, requester: newRequester
-        });
-        
-        // 顧客名を履歴に追加
-        addCustomerToHistory(newCustomer);
-        
-        // フォームリセット（日付だけは今日の日付を保持してもよい）
-        document.getElementById("newCustomer").value = "";
-        document.getElementById("newVehicle").value = "";
-        document.getElementById("newWork").value = "";
-        document.getElementById("newRequester").value = "";
-        document.getElementById("newQty").value = "1";
-        document.getElementById("newPrice").value = "0";
-        document.getElementById("newAmount").value = "";
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById("newDate").value = today;
-        
-        refreshAll();
-        alert(`✅ 新規ID: ${newId} を登録しました。`);
-        switchTab("list");
-    };
-
     function updateSelectOptions() {
         const select = document.getElementById("selectDocument");
         if(!select) return;
-        if(documents.length === 0){
+        if(documents.length === 0) {
             select.innerHTML = '<option value="">-- データがありません --</option>';
             return;
         }
@@ -596,77 +648,47 @@
         select.innerHTML = options;
     }
 
-    // プレビュー＆印刷 (画像イメージのような上部デザインを実現)
+    // 印刷＆プレビュー（画像イメージ風）
     window.generateDocumentAndPrint = function() {
         const idVal = document.getElementById("selectDocument").value;
         if(!idVal) { alert("発行する書類のIDを選択してください"); return; }
         const doc = documents.find(d => d.id == idVal);
         if(!doc) return;
-        
         const tax = Math.floor(doc.amount * 0.1);
         const totalIncTax = doc.amount + tax;
-        
-        // 画像イメージ通りの見た目（請求書／見積書 上部に大きく書類種別＋会社情報を表示）
         const printHtml = `
         <div class="invoice-template">
-            <!-- 上部イメージ（画像の雰囲気） -->
             <div class="invoice-header-logo">
                 <div class="invoice-title">${doc.type}</div>
                 <div class="invoice-sub">株式会社メカワーク</div>
                 <div style="font-size:0.7rem; margin-top:5px;">〒551-0003 大阪府大阪市大正区千島2-4UR 千島団地2-611</div>
             </div>
-            
             <div class="invoice-to">
-                <div class="customer-box">
-                    <strong>${doc.customer || "----"}</strong> 御中<br>
-                    <span style="font-size:0.75rem;">${doc.requester ? `担当: ${doc.requester}` : ""}</span>
-                </div>
-                <div class="date-box">
-                    発行日: ${formatDateJP(doc.date)}<br>
-                    書類No. ${doc.id}
-                </div>
+                <div class="customer-box"><strong>${doc.customer || "----"}</strong> 御中<br><span style="font-size:0.75rem;">${doc.requester ? `担当: ${doc.requester}` : ""}</span></div>
+                <div class="date-box">発行日: ${formatDateJP(doc.date)}<br>書類No. ${doc.id}</div>
             </div>
-            
             <div style="margin-bottom: 15px; font-weight:500;">件名： ${doc.work || "作業工賃"}</div>
-            
             <table class="item-table">
-                <thead>
-                    <tr><th>車両</th><th>作業内容</th><th>数量</th><th>単価</th><th>金額(税抜)</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>${doc.vehicle || "—"}</td>
-                        <td>${doc.work || "—"}</td>
-                        <td>${doc.qty}</td>
-                        <td>${formatMoney(doc.price)}</td>
-                        <td>${formatMoney(doc.amount)}</td>
-                    </tr>
-                </tbody>
+                <thead><tr><th>車両</th><th>作業内容</th><th>数量</th><th>単価</th><th>金額(税抜)</th></tr></thead>
+                <tbody><tr><td>${doc.vehicle || "—"}</td><td>${doc.work || "—"}</td><td>${doc.qty}</td><td>${formatMoney(doc.price)}</td><td>${formatMoney(doc.amount)}</td></tr></tbody>
             </table>
-            
             <div class="total-row">
                 小計：${formatMoney(doc.amount)}<br>
                 消費税(10%)：${formatMoney(tax)}<br>
                 <strong style="font-size:1.2rem;">合計金額（税込）：${formatMoney(totalIncTax)}</strong>
             </div>
-            
             <div class="company-footer">
                 株式会社メカワーク  〒551-0003 大阪府大阪市大正区千島2-4UR<br>
                 TEL：070-3537-4004  /  Email：motoyuki5611@gmail.com<br>
                 登録番号：T8120001266455
             </div>
-        </div>
-        `;
-        
+        </div>`;
         const displayDiv = document.getElementById("documentDisplay");
         if(displayDiv) displayDiv.innerHTML = printHtml;
-        
-        setTimeout(() => {
-            window.print();
-        }, 120);
+        setTimeout(() => window.print(), 120);
     };
-    
-    // 集計とダッシュボード
+
+    // 集計ダッシュボード
     function updateStatsAndDashboard() {
         const totalAmountSum = documents.reduce((sum,d)=> sum + d.amount,0);
         const totalTaxSum = Math.floor(totalAmountSum * 0.1);
@@ -674,43 +696,20 @@
         const totalCount = documents.length;
         const quoteCount = documents.filter(d=> d.type === "見積書").length;
         const invoiceCount = documents.filter(d=> d.type === "請求書").length;
-        
         const statsContainer = document.getElementById("statsCardsContainer");
         if(statsContainer){
             statsContainer.innerHTML = `
-                <div style="background:linear-gradient(115deg,#143e58,#1e5a7c); flex:1; min-width:180px; padding:22px; border-radius:28px; color:white; text-align:center;">
-                    <h4>総案件数</h4><div style="font-size:2.5rem; font-weight:800;">${totalCount}</div>
-                </div>
-                <div style="background:linear-gradient(115deg,#1f5575,#206f97); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;">
-                    <h4>見積書</h4><div style="font-size:2.5rem;">${quoteCount}</div>
-                </div>
-                <div style="background:linear-gradient(115deg,#1f5575,#206f97); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;">
-                    <h4>請求書</h4><div style="font-size:2.5rem;">${invoiceCount}</div>
-                </div>
-                <div style="background:linear-gradient(115deg,#164b67,#2b7aa3); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;">
-                    <h4>総売上(税込)</h4><div style="font-size:2rem;">${formatMoney(totalWithTax)}</div>
-                </div>
-            `;
+                <div style="background:linear-gradient(115deg,#143e58,#1e5a7c); flex:1; min-width:170px; padding:22px; border-radius:28px; color:white; text-align:center;"><h4>総案件数</h4><div style="font-size:2.5rem;">${totalCount}</div></div>
+                <div style="background:linear-gradient(115deg,#1f5575,#206f97); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;"><h4>見積書</h4><div style="font-size:2.5rem;">${quoteCount}</div></div>
+                <div style="background:linear-gradient(115deg,#1f5575,#206f97); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;"><h4>請求書</h4><div style="font-size:2.5rem;">${invoiceCount}</div></div>
+                <div style="background:linear-gradient(115deg,#164b67,#2b7aa3); flex:1; padding:22px; border-radius:28px; color:white; text-align:center;"><h4>総売上(税込)</h4><div style="font-size:1.9rem;">${formatMoney(totalWithTax)}</div></div>`;
         }
-        
-        // 顧客別集計
         const customerAgg = new Map();
-        documents.forEach(d => {
-            if(!d.customer) return;
-            if(!customerAgg.has(d.customer)){
-                customerAgg.set(d.customer, {count:0, amount:0});
-            }
-            const rec = customerAgg.get(d.customer);
-            rec.count++;
-            rec.amount += d.amount;
-        });
+        documents.forEach(d => { if(d.customer) customerAgg.set(d.customer, (customerAgg.get(d.customer) || {count:0, amount:0}), customerAgg.get(d.customer).count++, customerAgg.get(d.customer).amount += d.amount); });
         const statsBody = document.getElementById("statsTableBody");
         if(statsBody){
             statsBody.innerHTML = "";
-            if(customerAgg.size === 0){
-                statsBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:32px;'>データがありません</td></tr>";
-                return;
-            }
+            if(customerAgg.size === 0){ statsBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:32px;'>データがありません</td></tr>"; return; }
             for(let [cust, data] of customerAgg.entries()){
                 const taxVal = Math.floor(data.amount * 0.1);
                 const row = statsBody.insertRow();
@@ -722,57 +721,78 @@
             }
         }
     }
-    
-    function autoCalcAmount() {
-        const qty = parseInt(document.getElementById("newQty")?.value) || 0;
-        const price = parseInt(document.getElementById("newPrice")?.value) || 0;
-        const amountField = document.getElementById("newAmount");
-        if(amountField) amountField.value = formatMoney(qty * price);
+
+    // ユーティリティ
+    function formatDateJP(dateStr) { if(!dateStr) return ""; const d = new Date(dateStr); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; }
+    function formatMoney(amount) { return amount.toLocaleString('ja-JP') + "円"; }
+    function refreshAll() { renderListTable(); updateSelectOptions(); updateStatsAndDashboard(); }
+
+    // 連動チェックボックスのイベント
+    function bindSyncEvents() {
+        const syncCheck = document.getElementById("syncCheckbox");
+        const qtyInput = document.getElementById("newQty");
+        const priceInput = document.getElementById("newPrice");
+        const amountInput = document.getElementById("newAmount");
+        
+        const updateSyncState = () => {
+            isSyncEnabled = syncCheck.checked;
+            if(isSyncEnabled) {
+                // 連動ON: 数量・単価変更時に自動計算して金額フィールドを更新
+                const update = () => updateAmountFromSync();
+                qtyInput.addEventListener('input', update);
+                priceInput.addEventListener('input', update);
+                amountInput.readOnly = true;
+                amountInput.style.background = "#f1f5f9";
+                updateAmountFromSync();
+            } else {
+                // 連動OFF: 数量・単価のイベントを一時的に解除し、金額フィールドを編集可能に
+                qtyInput.removeEventListener('input', updateAmountFromSync);
+                priceInput.removeEventListener('input', updateAmountFromSync);
+                amountInput.readOnly = false;
+                amountInput.style.background = "white";
+                // 既存の金額をそのまま
+                if(amountInput.value === "" || amountInput.value === "0円") amountInput.value = "0円";
+                amountInput.addEventListener('blur', function() {
+                    let raw = amountInput.value.replace(/[^0-9]/g,'');
+                    let num = parseInt(raw) || 0;
+                    amountInput.value = formatMoneyValue(num);
+                });
+            }
+        };
+        syncCheck.addEventListener('change', updateSyncState);
+        updateSyncState(); // 初期設定
     }
-    
+
+    // タブ切り替え
     function switchTab(tabId) {
-        document.querySelectorAll(".panel-base").forEach(panel => panel.classList.remove("active-panel"));
-        document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+        document.querySelectorAll(".panel-base").forEach(p => p.classList.remove("active-panel"));
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         if(tabId === "list") document.getElementById("listPanel").classList.add("active-panel");
         else if(tabId === "add") document.getElementById("addPanel").classList.add("active-panel");
         else if(tabId === "print") document.getElementById("printPanel").classList.add("active-panel");
         else if(tabId === "stats") document.getElementById("statsPanel").classList.add("active-panel");
-        const targetBtn = Array.from(document.querySelectorAll(".tab")).find(btn => btn.dataset.tab === tabId);
-        if(targetBtn) targetBtn.classList.add("active");
-        if(tabId === "print" && documents.length>0 && !document.getElementById("selectDocument").value){
+        const activeBtn = Array.from(document.querySelectorAll(".tab")).find(btn => btn.dataset.tab === tabId);
+        if(activeBtn) activeBtn.classList.add("active");
+        if(tabId === "print" && documents.length>0 && !document.getElementById("selectDocument").value) {
             const sel = document.getElementById("selectDocument");
             if(sel && sel.options.length>1) sel.value = documents[0].id;
         }
     }
-    
-    // イベント紐付け
-    document.querySelectorAll(".tab").forEach(btn => {
-        btn.addEventListener("click", (e) => switchTab(btn.dataset.tab));
-    });
-    document.getElementById("newQty")?.addEventListener("input", autoCalcAmount);
-    document.getElementById("newPrice")?.addEventListener("input", autoCalcAmount);
-    
-    // 初期設定
-    const todayStr = new Date().toISOString().split('T')[0];
-    if(document.getElementById("newDate")) document.getElementById("newDate").value = todayStr;
-    
-    // 顧客履歴ロード & 空データで表示更新
-    loadCustomerHistory();
-    refreshAll();   // 空テーブル表示
-    autoCalcAmount();
-    
-    // プレビューエリアの初期イメージ（画像のようなメッセージ）
-    if(documents.length === 0){
-        const displayDiv = document.getElementById("documentDisplay");
-        if(displayDiv){
-            displayDiv.innerHTML = `<div class="invoice-template" style="text-align:center; padding:30px; color:#1e3a5f;">
-                <div class="invoice-title" style="font-size:1.8rem;">見積書 / 請求書</div>
-                <div style="margin: 20px 0;">データを登録すると、ここに書類が表示されます。</div>
-                <div style="font-size:0.8rem;">⬆️ 新規登録タブから案件を追加してください。</div>
-                <div style="margin-top: 16px; border-top:1px solid #ccc; padding-top:12px;">株式会社メカワーク</div>
-            </div>`;
+
+    // 初期化
+    function init() {
+        loadHistories();
+        bindSyncEvents();
+        const today = new Date().toISOString().split('T')[0];
+        if(document.getElementById("newDate")) document.getElementById("newDate").value = today;
+        refreshAll();
+        if(documents.length === 0){
+            const displayDiv = document.getElementById("documentDisplay");
+            if(displayDiv) displayDiv.innerHTML = `<div class="invoice-template" style="text-align:center; padding:30px;"><div class="invoice-title" style="font-size:1.8rem;">見積書 / 請求書</div><div style="margin:20px 0;">データを登録すると、ここに書類が表示されます。</div></div>`;
         }
+        document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => switchTab(btn.dataset.tab)));
     }
+    init();
 </script>
 </body>
 </html>
