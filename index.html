@@ -707,7 +707,7 @@
         checks.forEach(c => c.checked = chk.checked);
     }
 
-  // ★ 新しい印刷作成処理
+ // ★ 新しい印刷作成処理（入力内容をテキスト化）
 window.generateDocumentAndPrint = function() {
     const checks = document.querySelectorAll('.print-check:checked');
     if(checks.length === 0) {
@@ -732,26 +732,25 @@ window.generateDocumentAndPrint = function() {
         </tr>
     `).join("");
     
+    // まず入力欄付きのHTMLを作成
     const previewHtml = `
         <div style="font-family:'Helvetica Neue','Hiragino Kaku Gothic Pro',sans-serif; background:white; padding:12px;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
                 <div style="flex:1;">
-                    <!-- 🔽 ここから全部独立した入力欄 -->
                     <div style="text-align:center; margin-bottom:10px;">
-                        <input type="text" class="doc-input-field" placeholder="見積書 / 請求書" style="font-size:2.2rem; font-weight:bold; width:100%; text-align:center;">
+                        <input type="text" id="printDocType" class="doc-input-field" placeholder="見積書 / 請求書" style="font-size:2.2rem; font-weight:bold; width:100%; text-align:center; border:none; border-bottom:1px solid #ccc;">
                     </div>
                     
                     <div style="font-size:1.2rem; font-weight:bold; margin-bottom:8px;">
-                        <input type="text" class="doc-input-field" placeholder="例：〇〇株式会社 御中" style="font-size:1.2rem; font-weight:bold; width:90%;">
+                        <input type="text" id="printAddress" class="doc-input-field" placeholder="例：〇〇株式会社 御中" style="font-size:1.2rem; font-weight:bold; width:90%; border:none; border-bottom:1px solid #ccc;">
                     </div>
                     
                     <div style="margin-top:8px; font-size:1.1rem; font-weight:bold;">
-                        件名：<input type="text" class="doc-input-field" placeholder="例：作業工賃" style="width:70%; font-size:1.1rem; font-weight:bold; display:inline-block; margin-left:5px;">
+                        件名：<input type="text" id="printSubject" class="doc-input-field" placeholder="例：作業工賃" style="width:70%; font-size:1.1rem; font-weight:bold; display:inline-block; margin-left:5px; border:none; border-bottom:1px solid #ccc;">
                     </div>
-                    <!-- 🔼 ここまで -->
                     
                     <div style="margin-top:15px;">
-                        <input type="text" class="doc-input-field" value="下記の通り、申し上げます。" style="width:100%;">
+                        <span id="printMessage">下記の通り、申し上げます。</span>
                     </div>
                 </div>
                 <div style="text-align:right; min-width:280px;">
@@ -795,9 +794,21 @@ window.generateDocumentAndPrint = function() {
     const displayDiv = document.getElementById("documentDisplay");
     if(displayDiv) displayDiv.innerHTML = previewHtml;
     
+    // 少し待ってから入力内容をテキストに置き換え
     setTimeout(() => {
+        const docType = document.getElementById("printDocType").value || "請求書";
+        const address = document.getElementById("printAddress").value || "";
+        const subject = document.getElementById("printSubject").value || "作業工賃";
+        
+        // 入力欄をテキストに置き換え
+        document.getElementById("printDocType").outerHTML = `<span style="font-size:2.2rem; font-weight:bold;">${docType}</span>`;
+        document.getElementById("printAddress").outerHTML = `<span style="font-size:1.2rem; font-weight:bold;">${address}</span>`;
+        document.getElementById("printSubject").outerHTML = `<span style="font-size:1.1rem; font-weight:bold;">${subject}</span>`;
+        document.getElementById("printMessage").innerText = `下記の通り、${docType}申し上げます。`;
+        
+        // 印刷実行
         window.print();
-    }, 120);
+    }, 200);
 };
     // 集計 + ダッシュボード
     function updateStatsAndDashboard() {
