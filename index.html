@@ -514,24 +514,49 @@
         }
     }
 
-    // 編集 (金額編集)
-    window.editRecordById = function(id) {
-        const doc = documents.find(d => d.id === id);
-        if(!doc) return;
-        let newAmount = prompt(`金額(税抜)を編集 (現在: ${doc.amount || ""}円)`, doc.amount || "");
-        if(newAmount !== null) {
-            doc.amount = newAmount === "" ? null : parseInt(newAmount);
-            refreshAll();
-        }
-    };
+// 編集 (全項目編集)
+window.editRecordById = function(id) {
+    const doc = documents.find(d => d.id === id);
+    if(!doc) return;
 
-    window.deleteRecordById = function(id) {
-        if(confirm("この案件を削除しますか？ この操作は元に戻せません。")) {
-            documents = documents.filter(d => d.id !== id);
-            refreshAll();
-        }
-    };
+    // 各項目を入力ダイアログで編集
+    const newDate = prompt("日付を入力 (YYYY-MM-DD)", doc.date);
+    if(newDate === null) return; // キャンセルされたら何もしない
 
+    const newType = prompt("書類種別 (見積書 / 請求書)", doc.type);
+    if(newType === null) return;
+
+    const newVehicle = prompt("車両番号", doc.vehicle || "");
+    if(newVehicle === null) return;
+
+    const newWork = prompt("作業内容", doc.work || "");
+    if(newWork === null) return;
+
+    const newRequester = prompt("依頼主", doc.requester || "");
+    if(newRequester === null) return;
+
+    const newQty = prompt("数量", doc.qty || "");
+    if(newQty === null) return;
+
+    const newPrice = prompt("単価 (円)", doc.price || "");
+    if(newPrice === null) return;
+
+    const newAmount = prompt("金額 (税抜)", doc.amount || "");
+    if(newAmount === null) return;
+
+    // 値を更新
+    doc.date = newDate;
+    doc.type = newType;
+    doc.vehicle = newVehicle;
+    doc.work = newWork;
+    doc.requester = newRequester;
+    doc.qty = newQty === "" ? null : parseInt(newQty);
+    doc.price = newPrice === "" ? null : parseInt(newPrice);
+    doc.amount = newAmount === "" ? null : parseInt(newAmount);
+
+    refreshAll();
+    alert("✅ 内容を更新しました");
+};
     // 金額自動計算 連動切替
     function autoCalcAmount() {
         const linkOn = document.getElementById("linkCalc").checked;
