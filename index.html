@@ -211,6 +211,13 @@
             color: #1a3a5c;
         }
 
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
         .btn-primary {
             background: linear-gradient(95deg, #165a7a, #0d3f58);
             border: none;
@@ -365,16 +372,33 @@
                 <datalist id="customerList"></datalist>
             </div>
             <div><label>🚛 車両</label><input type="text" id="newVehicle" class="input-field" placeholder="例：大阪100か1234"></div>
-            <div><label>🔧 作業内容</label><input type="text" id="newWork" class="input-field" placeholder="例：ラジエーター交換"></div>
+            <div>
+                <label>🔧 作業内容</label>
+                <input list="workList" id="newWork" class="input-field" placeholder="例：ラジエーター交換">
+                <datalist id="workList"></datalist>
+            </div>
             <div><label>👤 依頼主</label><input type="text" id="newRequester" class="input-field" placeholder="例：河合様"></div>
-            <div><label>🔢 数量</label><input type="number" id="newQty" class="input-field" value="1" min="1"></div>
-            <div><label>💰 単価 (円)</label><input type="number" id="newPrice" class="input-field" value="0" min="0"></div>
-            <div><label>🧾 小計金額 (自動)</label><input type="text" id="newAmount" class="input-field" readonly style="background:#f1f5f9;"></div>
+            <div>
+                <label>🔢 数量</label>
+                <input type="number" id="newQty" class="input-field" min="1" placeholder="空欄可">
+            </div>
+            <div>
+                <label>💰 単価 (円)</label>
+                <input type="number" id="newPrice" class="input-field" min="0" placeholder="空欄可">
+            </div>
+            <div>
+                <label>🧾 金額 (円)</label>
+                <input type="number" id="newAmount" class="input-field" min="0" placeholder="空欄可">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="linkCalc" checked>
+                    <label for="linkCalc" style="margin:0; font-size:0.85rem;">数量 × 単価 を自動計算する</label>
+                </div>
+            </div>
         </div>
         <button class="btn-primary" onclick="registerNewRecord()">✅ 登録する</button>
     </div>
 
-    <!-- パネル3: 書類印刷 & プレビュー -->
+        <!-- パネル3: 書類印刷 & プレビュー -->
     <div id="printPanel" class="panel-base">
         <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 25px;">
             <div style="flex:1">
@@ -399,6 +423,7 @@
                 <tbody id="statsTableBody"></tbody>
             </table>
         </div>
+    </div>
 </div>
 
 <script>
@@ -414,16 +439,27 @@
     }
 
     function formatMoney(amount) {
-        if(amount === undefined || amount === null) amount = 0;
+        if(amount === undefined || amount === null || amount === "") return "";
         return amount.toLocaleString('ja-JP') + "円";
     }
 
-    // 更新: テーブル + 選択ボックス + 集計
+    // 更新: テーブル + 選択ボックス + 集計 + 候補リスト
     function refreshAll() {
         renderListTable();
         updateSelectOptions();
         updateStatsAndDashboard();
-        updateCustomerSuggestions();
+        updateSuggestions();
+    }
+
+    function updateSuggestions() {
+        // 顧客名
+        const custList = document.getElementById("customerList");
+        const uniqueCust = [...new Set(documents.map(d => d.customer).filter(c => c))];
+        custList.innerHTML = uniqueCust.map(c => `<option value="${c}">`).join("");
+        // 作業内容
+        const workList = document.getElementById("workList");
+        const uniqueWork = [...new Set(documents.map(d => d.work).filter(w => w))];
+        workList.innerHTML = uniqueWork.map(w => `<option value="${w}">`).join("");
     }
 
     function renderListTable() {
@@ -437,8 +473,8 @@
             row.insertCell(2).innerHTML = `<span class="badge-quote">${doc.type}</span>`;
             row.insertCell(3).innerText = doc.customer || "—";
             row.insertCell(4).innerText = doc.vehicle || "—";
-            row.insertCell(5).innerText = doc.work.length > 35 ? doc.work.slice(0,32)+"…" : doc.work;
-            row.insertCell(6).innerText = doc.qty;
+            row.insertCell(5).innerText = doc.work || "—";
+            row.insertCell(6).innerText = doc.qty || "";
             row.insertCell(7).innerText = formatMoney(doc.price);
             row.insertCell(8).innerText = formatMoney(doc.amount);
             row.insertCell(9).innerText = doc.requester || "—";
@@ -453,13 +489,10 @@
     window.editRecordById = function(id) {
         const doc = documents.find(d => d.id === id);
         if(!doc) return;
-        let newAmount = prompt(`「${doc.customer || "顧客"}」の金額(税抜)を編集 (現在: ${doc.amount}円)`, doc.amount);
-        if(newAmount !== null && !isNaN(parseFloat(newAmount))) {
-            const updatedAmount = parseInt(newAmount);
-            if(!isNaN(updatedAmount)) {
-                doc.amount = updatedAmount;
-                refreshAll();
-            }
+        let newAmount = prompt(`「${doc.customer || "顧客"}」の金額(税抜)を編集 (現在: ${doc.amount || ""}円)`, doc.amount || "");
+        if(newAmount !== null) {
+            doc.amount = newAmount === "" ? null : parseInt(newAmount);
+            refreshAll();
         }
     };
 
@@ -470,12 +503,13 @@
         }
     };
 
-    // 顧客名の自動補完用リスト更新
-    function updateCustomerSuggestions() {
-        const datalist = document.getElementById("customerList");
-        if(!datalist) return;
-        const uniqueCustomers = [...new Set(documents.map(d => d.customer).filter(c => c))];
-        datalist.innerHTML = uniqueCustomers.map(c => `<option value="${c}">`).join("");
+    // 金額自動計算 連動切替
+    function autoCalcAmount() {
+        const linkOn = document.getElementById("linkCalc").checked;
+        if(!linkOn) return;
+        const qty = parseInt(document.getElementById("newQty").value) || 0;
+        const price = parseInt(document.getElementById("newPrice").value) || 0;
+        document.getElementById("newAmount").value = (qty && price) ? qty * price : "";
     }
 
     // 新規登録処理
@@ -486,38 +520,33 @@
         const newVehicle = document.getElementById("newVehicle").value.trim();
         const newWork = document.getElementById("newWork").value.trim();
         const newRequester = document.getElementById("newRequester").value.trim();
-        let newQty = parseInt(document.getElementById("newQty").value);
-        let newPrice = parseInt(document.getElementById("newPrice").value);
+        let newQty = document.getElementById("newQty").value ? parseInt(document.getElementById("newQty").value) : null;
+        let newPrice = document.getElementById("newPrice").value ? parseInt(document.getElementById("newPrice").value) : null;
+        let newAmount = document.getElementById("newAmount").value ? parseInt(document.getElementById("newAmount").value) : null;
         
         if(!newDate) { alert("日付を選択してください"); return; }
         if(!newCustomer) { alert("顧客名を入力してください"); return; }
-        if(isNaN(newQty) || newQty<1) newQty = 1;
-        if(isNaN(newPrice)) newPrice = 0;
         
-        const newAmountVal = newQty * newPrice;
         const newId = documents.length > 0 ? Math.max(...documents.map(d=>d.id)) + 1 : 1;
         
         documents.push({
             id: newId, date: newDate, type: newType, customer: newCustomer,
-            vehicle: newVehicle, work: newWork || "作業内容未登録", qty: newQty,
-            price: newPrice, amount: newAmountVal, requester: newRequester
+            vehicle: newVehicle, work: newWork, qty: newQty,
+            price: newPrice, amount: newAmount, requester: newRequester
         });
         
         // フォームリセット
-        document.getElementById("newDate").value = "";
         document.getElementById("newCustomer").value = "";
         document.getElementById("newVehicle").value = "";
         document.getElementById("newWork").value = "";
         document.getElementById("newRequester").value = "";
-        document.getElementById("newQty").value = "1";
-        document.getElementById("newPrice").value = "0";
+        document.getElementById("newQty").value = "";
+        document.getElementById("newPrice").value = "";
         document.getElementById("newAmount").value = "";
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById("newDate").value = today;
+        document.getElementById("newDate").value = new Date().toISOString().split('T')[0];
         
         refreshAll();
         alert(`✅ 新規ID: ${newId} を登録しました。`);
-        // 一覧タブへ移動
         switchTab("list");
     };
 
@@ -532,15 +561,15 @@
         select.innerHTML = options;
     }
 
-    // 印刷用プレビュー & 印刷
+    // 印刷用プレビュー作成
     window.generateDocumentAndPrint = function() {
         const idVal = document.getElementById("selectDocument").value;
         if(!idVal) { alert("発行する書類のIDを選択してください"); return; }
         const doc = documents.find(d => d.id == idVal);
         if(!doc) return;
         
-        const tax = Math.floor(doc.amount * 0.1);
-        const totalIncTax = doc.amount + tax;
+        const tax = (doc.amount && !isNaN(doc.amount)) ? Math.floor(doc.amount * 0.1) : null;
+        const totalIncTax = (doc.amount && tax !== null) ? doc.amount + tax : null;
         
         const previewHtml = `
             <div style="font-family:'Helvetica Neue','Hiragino Kaku Gothic Pro',sans-serif; background:white; padding:12px;">
@@ -575,22 +604,36 @@
 
                 <hr style="border: none; border-top: 2px solid #333; margin:20px 0;">
 
+                <!-- 横1列テーブル -->
                 <table style="width:100%; border-collapse:collapse; margin:18px 0;">
-                    <tr style="background:#eef2fa;"><th style="border:1px solid #ccc; padding:10px; text-align:left;">車両番号</th><td style="border:1px solid #ccc; padding:10px;" colspan="3">${doc.vehicle || "記載なし"}</td></tr>
-                    <tr><th style="border:1px solid #ccc; padding:10px;">作業内容</th><td style="border:1px solid #ccc; padding:10px;" colspan="3">${doc.work || "-"}</td></tr>
-                    <tr style="background:#f8fafd;"><th style="border:1px solid #ccc;">数量</th><th style="border:1px solid #ccc;">単価</th><th style="border:1px solid #ccc;">金額(税抜)</th><th style="border:1px solid #ccc;"></th></tr>
-                    <tr><td style="border:1px solid #ccc; padding:10px;">${doc.qty}</td><td style="border:1px solid #ccc;">${formatMoney(doc.price)}</td><td style="border:1px solid #ccc;">${formatMoney(doc.amount)}</td><td style="border:1px solid #ccc;"></td></tr>
+                    <thead>
+                        <tr style="background:#eef2fa;">
+                            <th style="border:1px solid #ccc; padding:10px; width:12%;">日付</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:15%;">車両番号</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:25%;">作業内容</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:10%;">数量</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:13%;">単価</th>
+                            <th style="border:1px solid #ccc; padding:10px; width:15%;">金額(税抜)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:center;">${formatDateJP(doc.date)}</td>
+                            <td style="border:1px solid #ccc; padding:10px;">${doc.vehicle || ""}</td>
+                            <td style="border:1px solid #ccc; padding:10px;">${doc.work || ""}</td>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:center;">${doc.qty || ""}</td>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:right;">${formatMoney(doc.price)}</td>
+                            <td style="border:1px solid #ccc; padding:10px; text-align:right;">${formatMoney(doc.amount)}</td>
+                        </tr>
+                    </tbody>
                 </table>
 
-                <div class="total-area" style="text-align:right; margin-top:24px;">
+                <div class="total-area" style="text-align:right; margin-top:24px; padding-right:10px;">
                     小計: ${formatMoney(doc.amount)}<br>
                     消費税(10%): ${formatMoney(tax)}<br>
                     <strong style="font-size:1.2rem;">合計(税込): ${formatMoney(totalIncTax)}</strong>
                 </div>
 
-                <div style="margin-top: 40px; text-align: center; font-size: 0.7rem; color:#5e6f8d; border-top:1px dashed #ccc; padding-top:16px;">
-                    この書類は電子保存されています。
-                </div>
             </div>
         `;
         const displayDiv = document.getElementById("documentDisplay");
@@ -603,7 +646,7 @@
     
     // 集計 + ダッシュボード
     function updateStatsAndDashboard() {
-        const totalAmountSum = documents.reduce((sum,d)=> sum + d.amount,0);
+        const totalAmountSum = documents.reduce((sum,d)=> sum + (d.amount || 0),0);
         const totalTaxSum = Math.floor(totalAmountSum * 0.1);
         const totalWithTax = totalAmountSum + totalTaxSum;
         const totalCount = documents.length;
@@ -616,7 +659,7 @@
                 <div class="stat-card-modern"><h4>総案件数</h4><div class="stat-number">${totalCount}</div></div>
                 <div class="stat-card-modern"><h4>見積書</h4><div class="stat-number">${quoteCount}</div></div>
                 <div class="stat-card-modern"><h4>請求書</h4><div class="stat-number">${invoiceCount}</div></div>
-                <div class="stat-card-modern"><h4>総売上(税込)</h4><div class="stat-number">${formatMoney(totalWithTax)}</div></div>
+                <div class="stat-card-modern"><h4>総合計(税込)</h4><div class="stat-number">${formatMoney(totalWithTax)}</div></div>
             `;
         }
         
@@ -629,7 +672,7 @@
             }
             const rec = customerAgg.get(d.customer);
             rec.count++;
-            rec.amount += d.amount;
+            rec.amount += (d.amount || 0);
         });
         const statsBody = document.getElementById("statsTableBody");
         if(statsBody){
@@ -646,14 +689,6 @@
         }
     }
     
-    // 金額自動計算 (新規登録パネル)
-    function autoCalcAmount() {
-        const qty = parseInt(document.getElementById("newQty")?.value) || 0;
-        const price = parseInt(document.getElementById("newPrice")?.value) || 0;
-        const amountField = document.getElementById("newAmount");
-        if(amountField) amountField.value = formatMoney(qty * price);
-    }
-    
     // タブ切り替え機能
     function switchTab(tabId) {
         document.querySelectorAll(".panel-base").forEach(panel => panel.classList.remove("active-panel"));
@@ -663,6 +698,7 @@
         else if(tabId === "print") document.getElementById("printPanel").classList.add("active-panel");
         else if(tabId === "stats") document.getElementById("statsPanel").classList.add("active-panel");
         const targetTabBtn = Array.from(document.querySelectorAll(".tab")).find(btn => btn.dataset.tab === tabId);
+        if(targetTabBtn)
         if(targetTabBtn) targetTabBtn.classList.add("active");
         if(tabId === "print" && documents.length>0 && !document.getElementById("selectDocument").value){
             const selectEl = document.getElementById("selectDocument");
@@ -672,10 +708,11 @@
     
     // イベント紐付け
     document.querySelectorAll(".tab").forEach(btn => {
-        btn.addEventListener("click", (e) => switchTab(btn.dataset.tab));
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
     });
     document.getElementById("newQty")?.addEventListener("input", autoCalcAmount);
     document.getElementById("newPrice")?.addEventListener("input", autoCalcAmount);
+    document.getElementById("linkCalc")?.addEventListener("change", autoCalcAmount);
     
     // 初期設定：今日の日付セット
     const todayStr = new Date().toISOString().split('T')[0];
@@ -683,7 +720,6 @@
     
     // 初回描画
     refreshAll();
-    autoCalcAmount();
 </script>
 </body>
 </html>
