@@ -351,7 +351,7 @@
             <table class="modern-table" id="mainDataTable">
                 <thead>
                     <tr>
-                        <th>ID</th><th>日付</th><th>種別</th><th>顧客名</th><th>車両</th><th>作業内容</th>
+                        <th>ID</th><th>日付</th><th>種別</th><th>車両</th><th>作業内容</th>
                         <th>数量</th><th>単価</th><th>金額(税抜)</th><th>依頼主</th><th>操作</th>
                     </tr>
                 </thead>
@@ -366,11 +366,6 @@
         <div class="form-grid">
             <div><label>📅 日付</label><input type="date" id="newDate" class="input-field"></div>
             <div><label>📄 書類種別</label><select id="newType" class="input-field"><option>見積書</option><option>請求書</option></select></div>
-            <div>
-                <label>🏢 顧客名</label>
-                <input list="customerList" id="newCustomer" class="input-field" placeholder="例：いすゞ自動車近畿">
-                <datalist id="customerList"></datalist>
-            </div>
             <div><label>🚛 車両</label><input type="text" id="newVehicle" class="input-field" placeholder="例：大阪100か1234"></div>
             <div>
                 <label>🔧 作業内容</label>
@@ -398,7 +393,7 @@
         <button class="btn-primary" onclick="registerNewRecord()">✅ 登録する</button>
     </div>
 
-        <!-- パネル3: 書類印刷 & プレビュー -->
+    <!-- パネル3: 書類印刷 & プレビュー -->
     <div id="printPanel" class="panel-base">
         <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 25px;">
             <div style="flex:1">
@@ -452,11 +447,7 @@
     }
 
     function updateSuggestions() {
-        // 顧客名
-        const custList = document.getElementById("customerList");
-        const uniqueCust = [...new Set(documents.map(d => d.customer).filter(c => c))];
-        custList.innerHTML = uniqueCust.map(c => `<option value="${c}">`).join("");
-        // 作業内容
+        // 作業内容の記憶
         const workList = document.getElementById("workList");
         const uniqueWork = [...new Set(documents.map(d => d.work).filter(w => w))];
         workList.innerHTML = uniqueWork.map(w => `<option value="${w}">`).join("");
@@ -471,14 +462,13 @@
             row.insertCell(0).innerText = doc.id;
             row.insertCell(1).innerText = formatDateJP(doc.date);
             row.insertCell(2).innerHTML = `<span class="badge-quote">${doc.type}</span>`;
-            row.insertCell(3).innerText = doc.customer || "—";
-            row.insertCell(4).innerText = doc.vehicle || "—";
-            row.insertCell(5).innerText = doc.work || "—";
-            row.insertCell(6).innerText = doc.qty || "";
-            row.insertCell(7).innerText = formatMoney(doc.price);
-            row.insertCell(8).innerText = formatMoney(doc.amount);
-            row.insertCell(9).innerText = doc.requester || "—";
-            const actionCell = row.insertCell(10);
+            row.insertCell(3).innerText = doc.vehicle || "—";
+            row.insertCell(4).innerText = doc.work || "—";
+            row.insertCell(5).innerText = doc.qty || "";
+            row.insertCell(6).innerText = formatMoney(doc.price);
+            row.insertCell(7).innerText = formatMoney(doc.amount);
+            row.insertCell(8).innerText = doc.requester || "—";
+            const actionCell = row.insertCell(9);
             actionCell.className = "action-group";
             actionCell.innerHTML = `<button class="btn-icon btn-edit" onclick="editRecordById(${doc.id})">編集</button>
                                     <button class="btn-icon btn-delete" onclick="deleteRecordById(${doc.id})">削除</button>`;
@@ -489,7 +479,7 @@
     window.editRecordById = function(id) {
         const doc = documents.find(d => d.id === id);
         if(!doc) return;
-        let newAmount = prompt(`「${doc.customer || "顧客"}」の金額(税抜)を編集 (現在: ${doc.amount || ""}円)`, doc.amount || "");
+        let newAmount = prompt(`金額(税抜)を編集 (現在: ${doc.amount || ""}円)`, doc.amount || "");
         if(newAmount !== null) {
             doc.amount = newAmount === "" ? null : parseInt(newAmount);
             refreshAll();
@@ -516,7 +506,6 @@
     window.registerNewRecord = function() {
         const newDate = document.getElementById("newDate").value;
         const newType = document.getElementById("newType").value;
-        const newCustomer = document.getElementById("newCustomer").value.trim();
         const newVehicle = document.getElementById("newVehicle").value.trim();
         const newWork = document.getElementById("newWork").value.trim();
         const newRequester = document.getElementById("newRequester").value.trim();
@@ -525,18 +514,16 @@
         let newAmount = document.getElementById("newAmount").value ? parseInt(document.getElementById("newAmount").value) : null;
         
         if(!newDate) { alert("日付を選択してください"); return; }
-        if(!newCustomer) { alert("顧客名を入力してください"); return; }
         
         const newId = documents.length > 0 ? Math.max(...documents.map(d=>d.id)) + 1 : 1;
         
         documents.push({
-            id: newId, date: newDate, type: newType, customer: newCustomer,
+            id: newId, date: newDate, type: newType,
             vehicle: newVehicle, work: newWork, qty: newQty,
             price: newPrice, amount: newAmount, requester: newRequester
         });
         
         // フォームリセット
-        document.getElementById("newCustomer").value = "";
         document.getElementById("newVehicle").value = "";
         document.getElementById("newWork").value = "";
         document.getElementById("newRequester").value = "";
@@ -556,7 +543,7 @@
         if(!select) return;
         let options = '<option value="">-- 書類を選択 --</option>';
         documents.forEach(doc => {
-            options += `<option value="${doc.id}">${doc.id}: ${doc.customer} (${formatDateJP(doc.date)}) - ${doc.type}</option>`;
+            options += `<option value="${doc.id}">${doc.id}: ${formatDateJP(doc.date)} - ${doc.type}</option>`;
         });
         select.innerHTML = options;
     }
@@ -576,10 +563,12 @@
                 <!-- 上部ヘッダー：編集可能項目 -->
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
                     <div style="flex:1;">
-                        <div style="font-size:2.2rem; font-weight:bold; text-align:center; margin-bottom:10px;">${doc.type}</div>
+                        <div style="text-align:center; margin-bottom:10px;">
+                            <input type="text" class="doc-input-field" value="${doc.type}" style="font-size:2.2rem; font-weight:bold; width:100%; text-align:center;">
+                        </div>
                         
                         <div style="font-size:1.2rem; font-weight:bold; margin-bottom:8px;">
-                            <input type="text" class="doc-input-field" value="${doc.customer || ""} 御中" style="font-size:1.2rem; font-weight:bold; width:90%;">
+                            <input type="text" class="doc-input-field" placeholder="〇〇株式会社 御中" style="font-size:1.2rem; font-weight:bold; width:90%;">
                         </div>
                         
                         <div style="margin-top:8px;">
@@ -666,11 +655,11 @@
         // 顧客別集計
         const customerAgg = new Map();
         documents.forEach(d => {
-            if(!d.customer) return;
-            if(!customerAgg.has(d.customer)){
-                customerAgg.set(d.customer, {count:0, amount:0});
+            const key = d.customer || "未登録";
+            if(!customerAgg.has(key)){
+                customerAgg.set(key, {count:0, amount:0});
             }
-            const rec = customerAgg.get(d.customer);
+            const rec = customerAgg.get(key);
             rec.count++;
             rec.amount += (d.amount || 0);
         });
@@ -698,7 +687,6 @@
         else if(tabId === "print") document.getElementById("printPanel").classList.add("active-panel");
         else if(tabId === "stats") document.getElementById("statsPanel").classList.add("active-panel");
         const targetTabBtn = Array.from(document.querySelectorAll(".tab")).find(btn => btn.dataset.tab === tabId);
-        if(targetTabBtn)
         if(targetTabBtn) targetTabBtn.classList.add("active");
         if(tabId === "print" && documents.length>0 && !document.getElementById("selectDocument").value){
             const selectEl = document.getElementById("selectDocument");
