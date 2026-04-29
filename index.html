@@ -532,4 +532,118 @@
         let doc = documents.find(d => d.id == id);
         if (!doc) return;
         
-        let tax = Math.floor(doc.amount * 0.1
+        let tax = Math.floor(doc.amount * 0.1);
+        let total = doc.amount + tax;
+        
+        let html = `
+            <div class="document-header">
+                <div class="document-title">${doc.type}</div>
+                <div>No. ${doc.id}</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <strong>${doc.customer}</strong> 御中<br>
+                日付：${formatDate(doc.date)}<br>
+                依頼主：${doc.requester || "-"}
+            </div>
+            <table class="document-table">
+                <tr><th style="width:15%">車両</th><td colspan="3">${doc.vehicle || "-"}</td></tr>
+                <tr><th>作業内容</th><td colspan="3">${doc.work || "-"}</td></tr>
+                <tr><th>数量</th><th>単価</th><th>金額</th><th></th></tr>
+                <tr><td>${doc.qty}</td><td>${formatMoney(doc.price)}</td><td>${formatMoney(doc.amount)}</td><td></td></tr>
+            </table>
+            <div class="total-area">
+                小計：${formatMoney(doc.amount)}<br>
+                消費税（10%）：${formatMoney(tax)}<br>
+                <strong>合計（税込）：${formatMoney(total)}</strong>
+            </div>
+            <div style="margin-top: 30px; text-align: center; font-size: 0.8rem; color: #666;">
+                株式会社メカワーク　〒551-0003 大阪府大阪市大正区千島2-4UR<br>
+                TEL：070-3537-4004 / Email：motoyuki5611@gmail.com
+            </div>
+        `;
+        document.getElementById("documentDisplay").innerHTML = html;
+        
+        // 自動的に印刷ダイアログを開く
+        setTimeout(() => { window.print(); }, 100);
+    }
+
+    // 集計更新
+    function updateStats() {
+        // 統計カード
+        let totalAmount = documents.reduce((sum, d) => sum + d.amount, 0);
+        let totalTax = Math.floor(totalAmount * 0.1);
+        let totalWithTax = totalAmount + totalTax;
+        let docCount = documents.length;
+        let quoteCount = documents.filter(d => d.type === "見積書").length;
+        let invoiceCount = documents.filter(d => d.type === "請求書").length;
+        
+        document.getElementById("statsCards").innerHTML = `
+            <div class="stat-card"><h3>総案件数</h3><div class="number">${docCount}</div></div>
+            <div class="stat-card"><h3>見積書</h3><div class="number">${quoteCount}</div></div>
+            <div class="stat-card"><h3>請求書</h3><div class="number">${invoiceCount}</div></div>
+            <div class="stat-card"><h3>総売上（税込）</h3><div class="number">${formatMoney(totalWithTax)}</div></div>
+        `;
+        
+        // 顧客別集計
+        let customerMap = new Map();
+        documents.forEach(d => {
+            if (!d.customer) return;
+            if (!customerMap.has(d.customer)) {
+                customerMap.set(d.customer, { count: 0, amount: 0 });
+            }
+            let c = customerMap.get(d.customer);
+            c.count++;
+            c.amount += d.amount;
+        });
+        
+        let statsHtml = "";
+        for (let [customer, data] of customerMap) {
+            let tax = Math.floor(data.amount * 0.1);
+            statsHtml += `<tr>
+                <td>${customer}</td>
+                <td>${data.count}</td>
+                <td>${formatMoney(data.amount)}</td>
+                <td>${formatMoney(tax)}</td>
+                <td>${formatMoney(data.amount + tax)}</td>
+            </tr>`;
+        }
+        document.getElementById("statsBody").innerHTML = statsHtml;
+    }
+
+    // タブ切り替え
+    function switchTab(tabId) {
+        document.querySelectorAll(".panel").forEach(panel => panel.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+        
+        if (tabId === "list") document.getElementById("listPanel").classList.add("active");
+        else if (tabId === "add") document.getElementById("addPanel").classList.add("active");
+        else if (tabId === "print") document.getElementById("printPanel").classList.add("active");
+        else if (tabId === "stats") document.getElementById("statsPanel").classList.add("active");
+        
+        document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add("active");
+        
+        if (tabId === "print") {
+            // 何も選択されてなければ最初のIDを選択
+            if (document.getElementById("selectDocument").value === "") {
+                if (documents.length > 0) {
+                    document.getElementById("selectDocument").value = documents[0].id;
+                }
+            }
+        }
+    }
+
+    // イベントリスナー
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    });
+    
+    // 初期化
+    renderTable();
+    updateAmount();
+    
+    // 日付のデフォルト値
+    let today = new Date().toISOString().split('T')[0];
+    document.getElementById("newDate").value = today;
+</script>
+</body>
+</html>
