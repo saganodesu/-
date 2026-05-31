@@ -439,7 +439,6 @@
             <table class="resizable-table" id="printSelectTable">
                 <thead>
                     <tr id="printHeader">
-                        <!-- 一括選択チェックボックスを追加 -->
                         <th data-col="0" style="width: 45px;"><input type="checkbox" onclick="togglePrintAll(this)" style="margin:0; transform:scale(1.1);"><div class="resize-handle"></div></th>
                         <th data-col="1" style="width: 100px;">日付<div class="resize-handle"></div></th>
                         <th data-col="2" style="width: 85px;">種別<div class="resize-handle"></div></th>
@@ -690,7 +689,9 @@
             tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">📭 登録されたデータがありません。新規登録してください</td></tr>';
             return;
         }
-        documents.forEach(doc => {
+        // 日付の昇順（古い順）にソートしてから表示
+        const sortedDocs = [...documents].sort((a, b) => new Date(a.date) - new Date(b.date));
+        sortedDocs.forEach(doc => {
             const row = tbody.insertRow();
             row.insertCell(0).innerHTML = `<input type="checkbox" class="print-check" data-id="${doc.id}">`;
             row.insertCell(1).innerText = formatDateJP(doc.date);
@@ -703,7 +704,6 @@
         });
     }
 
-    // 一括選択用関数（既存）
     window.togglePrintAll = function(chk) {
         document.querySelectorAll('.print-check').forEach(c => c.checked = chk.checked);
     };
@@ -711,7 +711,11 @@
     window.generateDocumentAndPrint = function() {
         const checks = document.querySelectorAll('.print-check:checked');
         if(checks.length === 0) { alert("印刷対象の項目を選択してください"); return; }
-        const selectedDocs = Array.from(checks).map(c => documents.find(d => d.id == c.dataset.id)).filter(d => d);
+        const selectedDocs = Array.from(checks)
+            .map(c => documents.find(d => d.id == c.dataset.id))
+            .filter(d => d)
+            .sort((a, b) => new Date(a.date) - new Date(b.date)); // 印刷時も日付昇順に並べ替え
+
         const totalAmount = selectedDocs.reduce((sum, d) => sum + (d.amount || 0), 0);
         const tax = Math.floor(totalAmount * 0.1);
         const totalIncTax = totalAmount + tax;
@@ -719,7 +723,6 @@
         let subject = document.getElementById("invoiceSubject")?.value.trim() || "ご請求書";
         const rowsHtml = selectedDocs.map(doc => `<tr><td style="border:1px solid #999; padding:10px; text-align:center;">${formatDateJP(doc.date)}</td><td style="border:1px solid #999; padding:10px;">${doc.vehicle || ""}</td><td style="border:1px solid #999; padding:10px;">${doc.work || ""}</td><td style="border:1px solid #999; padding:10px; text-align:center;">${doc.qty !== null ? doc.qty : ""}</td><td style="border:1px solid #999; padding:10px; text-align:right;">${doc.price ? formatMoney(doc.price) : ""}</td><td style="border:1px solid #999; padding:10px; text-align:right;">${doc.amount ? formatMoney(doc.amount) : ""}</td></tr>`).join("");
         const docTypeDisplay = selectedDocs[0]?.type || "請求書";
-        // お支払い文言を完全に削除したプレビューHTML
         const previewHtml = `<div class="document-invoice" style="font-family:'Helvetica Neue','Hiragino Kaku Gothic Pro',sans-serif; background:white; width:100%; margin:0; padding:0;"><div style="padding: 0 0 12px 0; margin-bottom: 18px; border-bottom: 2px solid #1e3a5f;"><div style="display:flex; justify-content:space-between; align-items:flex-start;"><div style="font-size:2rem; font-weight:bold; color:#1a3a5c;"><input type="text" class="doc-input-field" value="${docTypeDisplay}" style="font-size:2rem; font-weight:bold; width:150px;"></div><div style="text-align:right; font-size:0.8rem; line-height:1.4;">〒551-0003 大阪府大阪市大正区千島2-4UR 千島団地2-611<br>TEL：070-3537-4004 / motoyuki5611@gmail.com<br>登録番号：T8120001266455<br><span style="font-size:1rem; font-weight:bold;">株式会社メカワーク</span></div></div></div><div style="margin-bottom: 28px;"><div style="font-size:1.4rem; font-weight:bold; margin-bottom: 10px;"><input type="text" class="doc-input-field" value="${recipient}" style="font-size:1.4rem; width:280px; font-weight:bold;"></div><div style="font-size:1.1rem; margin-bottom: 15px; padding-left: 4px; color:#2c3e50;"><input type="text" class="doc-input-field" value="${subject}" style="font-size:1.1rem; width:360px; font-weight:500;"></div><div style="font-size:0.95rem;">下記の通りご請求申し上げます。</div></div><table style="width:100%; border-collapse:collapse; margin-bottom:35px;"><thead><tr style="background:#f0f4f8;"><th style="border:1px solid #999; padding:10px;">日付</th><th style="border:1px solid #999; padding:10px;">車両</th><th style="border:1px solid #999; padding:10px;">作業内容</th><th style="border:1px solid #999; padding:10px;">数量</th><th style="border:1px solid #999; padding:10px;">単価</th><th style="border:1px solid #999; padding:10px;">金額</th></tr></thead><tbody>${rowsHtml}</tbody></table><div style="text-align:right; margin-top:20px; font-size:1rem; border-top:1px solid #ddd; padding-top:20px;"><div>税抜金額計：<strong>${formatMoney(totalAmount)}</strong></div><div>消費税(10%)：<strong>${formatMoney(tax)}</strong></div><div style="font-size:1.5rem; margin-top:8px; color:#b22234;">税込合計金額：<strong>${formatMoney(totalIncTax)}</strong></div></div></div>`;
         document.getElementById("documentDisplay").innerHTML = previewHtml;
         setTimeout(() => { window.print(); }, 100);
